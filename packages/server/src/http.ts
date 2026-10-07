@@ -1,3 +1,4 @@
+import { syncDeposit } from './sync';
 import * as chainService from './chain-service';
 import { z, ZodError } from 'zod';
 import { pool } from '../../db/src/index';
@@ -83,6 +84,15 @@ export async function handle(req: Request) {
       return json(await service.eventDetail(uuid.parse(parts[1]), wallet));
     }
     const wallet = await authenticatedWallet(req);
+    if (
+      method === 'POST' &&
+      parts[0] === 'registrations' &&
+      parts[2] === 'sync'
+    ) {
+      await service.registration(uuid.parse(parts[1]), wallet);
+      return json(await syncDeposit(parts[1]));
+    }
+
     if (method === 'POST' && key === 'local/fund') {
       await rateLimit(`faucet:${wallet}`, 5);
       return json(await chainService.fundLocalWallet(wallet));
@@ -291,16 +301,10 @@ export async function handle(req: Request) {
         ).rows,
       );
     }
-    if (method === 'GET' && key === 'jobs') {
-      return json(
-        (
-          await pool.query(
-            `select j.id,j.kind,j.status,j.error_code,j.attempts,j.updated_at from outbox j join registrations r on r.id=j.registration_id join sessions s on s.id=r.session_id join events e on e.id=s.event_id join memberships m on m.org_id=e.org_id where m.wallet=$1 and m.role in ('owner','manager') and j.status<>'done' order by j.created_at limit 200`,
-            [wallet],
-          )
-        ).rows,
-      );
-    }
+    if (method === 'GET' && key === 'jobs')
+      return json(await service.failedJobs(wallet));
+    if (method === 'POST' && parts[0] === 'jobs' && parts[2] === 'retry')
+      return json(await service.retryJob(wallet, uuid.parse(parts[1])));
     throw new DomainError('NOT_FOUND', 'Маршрут не найден', 404);
   } catch (error) {
     if (error instanceof ZodError)

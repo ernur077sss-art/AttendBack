@@ -53,6 +53,7 @@ pub struct Commitment {
     pub principal: u64,
     pub status: DepositStatus,
     pub late_cancel: bool,
+    pub guest_cancelled: bool,
     pub refund: u64,
     pub penalty: u64,
     pub bump: u8,

@@ -1,23 +1,46 @@
+import { randomUUID } from 'node:crypto';
 import { health, pool } from '../../../packages/db/src/index';
+import { tick } from '../../../packages/server/src/jobs';
 async function main() {
-  if (!(await health())) throw new Error('Database is unavailable');
-  console.log('AttendBack worker: database connected');
-  if (process.argv.includes('--once')) {
-    await pool.end();
-    return;
-  }
-  const timer = setInterval(
-    () => void health().catch(console.error),
-    Number(process.env.WORKER_POLL_MS ?? 2000),
-  );
+  if (!(await health())) throw new Error('Database unavailable');
+  const workerId = randomUUID();
+  let stopping = false;
   for (const signal of ['SIGINT', 'SIGTERM'])
-    process.on(signal, async () => {
-      clearInterval(timer);
-      await pool.end();
-      process.exit(0);
+    process.on(signal, () => {
+      stopping = true;
     });
+  console.log(
+    'AttendBack worker: database connected, local/devnet reconciliation enabled',
+  );
+  do {
+    try {
+      await tick(workerId);
+      console.log(
+        JSON.stringify({
+          service: 'worker',
+          at: new Date().toISOString(),
+          status: 'ok',
+        }),
+      );
+    } catch (error) {
+      console.error(
+        JSON.stringify({
+          service: 'worker',
+          status: 'retry',
+          error: error instanceof Error ? error.name : 'unknown',
+        }),
+      );
+      if (process.argv.includes('--once')) throw error;
+    }
+    if (process.argv.includes('--once') || stopping) break;
+    await new Promise((resolve) =>
+      setTimeout(resolve, Number(process.env.WORKER_POLL_MS ?? 2000)),
+    );
+  } while (!stopping);
+  await pool.end();
 }
 main().catch((error) => {
   console.error(error.message);
-  process.exit(1);
+  process.exitCode = 1;
+  void pool.end();
 });

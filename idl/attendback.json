@@ -1190,6 +1190,10 @@
             "type": "bool"
           },
           {
+            "name": "guest_cancelled",
+            "type": "bool"
+          },
+          {
             "name": "refund",
             "type": "u64"
           },

@@ -76,6 +76,7 @@ pub mod attendback {
             principal: p.terms.amount,
             status: DepositStatus::Funded,
             late_cancel: false,
+            guest_cancelled: false,
             refund: 0,
             penalty: 0,
             bump: ctx.bumps.commitment,
@@ -85,9 +86,10 @@ pub mod attendback {
     pub fn cancel_registration(ctx: Context<GuestAction>) -> Result<()> {
         let c = &mut ctx.accounts.commitment;
         require!(
-            c.status == DepositStatus::Funded && !c.late_cancel,
+            c.status == DepositStatus::Funded && !c.guest_cancelled,
             AttendError::InvalidState
         );
+        c.guest_cancelled = true;
         if Clock::get()?.unix_timestamp < ctx.accounts.policy.terms.free_cancel_until
             || ctx.accounts.event.cancelled
         {
@@ -107,7 +109,7 @@ pub mod attendback {
             AttendError::InvalidTime
         );
         require!(
-            !c.late_cancel
+            !c.guest_cancelled
                 && (c.status == DepositStatus::Funded || c.status == DepositStatus::NoShowProposed),
             AttendError::InvalidState
         );

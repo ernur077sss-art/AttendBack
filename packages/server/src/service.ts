@@ -163,7 +163,7 @@ export async function registration(
   db: DbClient = pool,
 ) {
   const r = await db.query(
-    'select r.*,s.policy,s.terms_hash,s.policy_address,s.event_id,s.title,s.capacity,e.org_id,e.chain_address as event_address,e.cancelled,e.location from registrations r join sessions s on s.id=r.session_id join events e on e.id=s.event_id where r.id=$1',
+    'select r.*,s.policy,s.terms_hash,s.policy_address,s.event_id,s.title,s.capacity,e.org_id,e.authority,e.cancel_deadline,e.chain_address as event_address,e.cancelled,e.location from registrations r join sessions s on s.id=r.session_id join events e on e.id=s.event_id where r.id=$1',
     [id],
   );
   const item = r.rows[0];
@@ -463,4 +463,35 @@ export async function eventRegistrations(actor: string, eventId: string) {
   ).rows.map((r) =>
     role === 'staff' ? { ...r, dispute_description: undefined } : r,
   );
+}
+
+export async function failedJobs(wallet: string) {
+  const jobs = (
+    await pool.query(
+      `select j.id,j.kind,j.status,j.error_code,j.attempts,j.updated_at from outbox j join registrations r on r.id=j.registration_id join sessions s on s.id=r.session_id join events e on e.id=s.event_id join memberships m on m.org_id=e.org_id where m.wallet=$1 and m.role in ('owner','manager') and j.status<>'done' order by j.created_at limit 200`,
+      [wallet],
+    )
+  ).rows;
+  const sync = (
+    await pool.query(
+      `select r.id,'sync' as kind,'failed' as status,r.sync_error as error_code,0 as attempts,r.updated_at from registrations r join sessions s on s.id=r.session_id join events e on e.id=s.event_id join memberships m on m.org_id=e.org_id where m.wallet=$1 and m.role in ('owner','manager') and r.sync_error is not null limit 100`,
+      [wallet],
+    )
+  ).rows;
+  return [...jobs, ...sync];
+}
+export async function retryJob(actor: string, id: string) {
+  const row = (
+    await pool.query(
+      'select e.org_id from outbox j join registrations r on r.id=j.registration_id join sessions s on s.id=r.session_id join events e on e.id=s.event_id where j.id=$1',
+      [id],
+    )
+  ).rows[0];
+  if (!row) throw new DomainError('NOT_FOUND', 'Задание не найдено', 404);
+  await requireRole(row.org_id, actor, ['owner', 'manager']);
+  await pool.query(
+    "update outbox set status=case when wire_transaction is null then 'ready' else 'submitted' end,available_at=now(),lease_until=null,error_code=null,attempts=0 where id=$1 and status='failed'",
+    [id],
+  );
+  return { queued: true };
 }

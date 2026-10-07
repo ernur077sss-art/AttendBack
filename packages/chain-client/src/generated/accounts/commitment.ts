@@ -62,6 +62,7 @@ export type Commitment = {
   principal: bigint;
   status: DepositStatus;
   lateCancel: boolean;
+  guestCancelled: boolean;
   refund: bigint;
   penalty: bigint;
   bump: number;
@@ -73,6 +74,7 @@ export type CommitmentArgs = {
   principal: number | bigint;
   status: DepositStatusArgs;
   lateCancel: boolean;
+  guestCancelled: boolean;
   refund: number | bigint;
   penalty: number | bigint;
   bump: number;
@@ -88,6 +90,7 @@ export function getCommitmentEncoder(): FixedSizeEncoder<CommitmentArgs> {
       ['principal', getU64Encoder()],
       ['status', getDepositStatusEncoder()],
       ['lateCancel', getBooleanEncoder()],
+      ['guestCancelled', getBooleanEncoder()],
       ['refund', getU64Encoder()],
       ['penalty', getU64Encoder()],
       ['bump', getU8Encoder()],
@@ -105,6 +108,7 @@ export function getCommitmentDecoder(): FixedSizeDecoder<Commitment> {
     ['principal', getU64Decoder()],
     ['status', getDepositStatusDecoder()],
     ['lateCancel', getBooleanDecoder()],
+    ['guestCancelled', getBooleanDecoder()],
     ['refund', getU64Decoder()],
     ['penalty', getU64Decoder()],
     ['bump', getU8Decoder()],
@@ -173,5 +177,5 @@ export async function fetchAllMaybeCommitment(
 }
 
 export function getCommitmentSize(): number {
-  return 99;
+  return 100;
 }

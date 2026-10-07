@@ -246,7 +246,7 @@ export async function syncPublication(sessionId: string) {
   await pool.query('update sessions set published=true where id=$1', [
     sessionId,
   ]);
-  await pool.query('update events set cancelled=$1 where id=$2', [
+  await pool.query('update events set cancelled=cancelled OR $1 where id=$2', [
     snap.event!.cancelled,
     s.event_id,
   ]);

@@ -74,7 +74,7 @@ function App() {
       .getSignatureStatuses([signature(sig)], {
         searchTransactionHistory: true,
       })
-      .send();
+      .send({ abortSignal: AbortSignal.timeout(15000) });
     if (s.value[0]?.err) throw new Error('Транзакция отклонена сетью');
     setMessage(
       s.value[0]?.confirmationStatus === 'finalized'
@@ -273,7 +273,7 @@ function App() {
                       preflightCommitment: 'confirmed',
                       maxRetries: 3n,
                     })
-                    .send();
+                    .send({ abortSignal: AbortSignal.timeout(15000) });
                   setMessage(
                     'Возврат отправлен. Проверьте подтверждение сети.',
                   );

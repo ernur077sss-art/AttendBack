@@ -110,9 +110,7 @@ function Scanner() {
       );
       setResult({
         id: token.split('.')[0],
-        expires: res.duplicate
-          ? Date.now()
-          : new Date(res.eligibleAt ?? Date.now()).getTime(),
+        expires: new Date(res.eligibleAt ?? Date.now()).getTime(),
       });
       app.report(
         res.duplicate

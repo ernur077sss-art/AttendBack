@@ -21,4 +21,44 @@ jobs:
         with:
           version: '11.25.0'
       - run: pnpm install --frozen-lockfile
+      - name: Install pinned Solana build tools
+        run: |
+          mkdir -p .local/ci/bin
+          curl --fail --location --retry 3 https://github.com/anza-xyz/agave/releases/download/v4.3.0/solana-release-x86_64-unknown-linux-gnu.tar.bz2 -o .local/ci/solana.tar.bz2
+          echo 'c97289a8abb1d0efb497d8b5cb285baabd9b7f8ea6647f5d145c5dc8ff3611e8  .local/ci/solana.tar.bz2' | sha256sum --check
+          tar -xjf .local/ci/solana.tar.bz2 -C .local/ci
+          curl --fail --location --retry 3 https://github.com/otter-sec/anchor/releases/download/v1.2.1/anchor-1.2.1-x86_64-unknown-linux-gnu -o .local/ci/bin/anchor
+          echo '5c899379cbd9a843fa4a730a37ba7ab61357571ffc535036a9afa08e5cd0b99b  .local/ci/bin/anchor' | sha256sum --check
+          chmod +x .local/ci/bin/anchor
+          echo "$PWD/.local/ci/bin" >> "$GITHUB_PATH"
+          echo "$PWD/.local/ci/solana-release/bin" >> "$GITHUB_PATH"
+          rustup toolchain install 1.99.0 --profile minimal
+      - name: Build program and verify generated client
+        run: |
+          NO_DNA=1 anchor build
+          pnpm codegen
+          git diff --exit-code -- idl packages/chain-client/src/generated
       - run: pnpm check
+      - run: pnpm recovery:build
+      - name: Start local Solana and prepare test database
+        run: |
+          pnpm db:migrate
+          node --import tsx scripts/test-db.ts
+          pnpm localnet > .local/ci/localnet.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:8899 -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","id":1,"method":"getHealth"}' | grep -q '"ok"'; then exit 0; fi
+            sleep 1
+          done
+          cat .local/ci/localnet.log
+          exit 1
+      - run: pnpm test:db
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: failure-evidence
+          path: |
+            test-results
+            playwright-report
+            .local/ci/localnet.log

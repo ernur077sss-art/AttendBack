@@ -22,6 +22,7 @@ import {
 } from '../packages/server/src/service';
 import { reconcileIntents } from '../packages/server/src/sync';
 import { pool } from '../packages/db/src';
+import type { Policy } from '../packages/domain/src';
 export async function sendLocal(
   signer: KeyPairSigner,
   intent: Awaited<ReturnType<typeof preparePublication>>,
@@ -52,6 +53,7 @@ export async function seedDemo(
   title = 'Builders Meetup · Astana (демо)',
   mode: 'attendance' | 'cancel' = 'attendance',
   capacity = 30,
+  overrides: Partial<Policy> = {},
 ) {
   const owner = await localSigner('owner'),
     staff = await localSigner('staff'),
@@ -83,6 +85,7 @@ export async function seedDemo(
       disputeDeadline: n + 86400,
       resolutionDeadline: n + 172800,
       hardRefundAt: n + 259200,
+      ...overrides,
     },
   });
   await sendLocal(

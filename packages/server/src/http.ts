@@ -1,4 +1,5 @@
 import { syncDeposit } from './sync';
+import { chainTime } from './chain';
 import * as chainService from './chain-service';
 import { z, ZodError } from 'zod';
 import { pool } from '../../db/src/index';
@@ -59,6 +60,8 @@ export async function handle(req: Request) {
       method = req.method;
     if (method === 'GET' && key === 'config')
       return json(await chainService.publicConfig());
+    if (method === 'GET' && key === 'clock')
+      return json({ unixTime: await chainTime() });
     if (method === 'GET' && key === 'events')
       return json(await service.listEvents());
     if (method !== 'GET') checkOrigin(req);

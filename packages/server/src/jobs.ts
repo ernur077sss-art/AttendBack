@@ -199,6 +199,11 @@ export async function processJob(
   }
 }
 export async function tick(workerId: string = randomUUID(), maxJobs = 10) {
+  await pool.query('delete from evidence where expires_at<=now()');
+  await pool.query('delete from auth_sessions where expires_at<=now()');
+  await pool.query(
+    "delete from auth_challenges where expires_at<now()-interval '1 day'",
+  );
   await reconcileIntents();
   await expireReservations();
   await scheduleDue();

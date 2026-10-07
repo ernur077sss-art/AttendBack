@@ -1,5 +1,11 @@
 'use client';
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import Link from 'next/link';
 import { ArrowRight, CalendarDays, MapPin, ShieldCheck } from 'lucide-react';
 import { api, date, type Event, statuses } from '../lib/api';
@@ -8,6 +14,9 @@ import { displayAmount } from '../../../packages/domain/src';
 import { useApp } from './providers';
 import { Button } from './ui/button';
 export function useResource<T>(path: string | null) {
+  const sequence = useRef(0),
+    currentPath = useRef(path);
+  currentPath.current = path;
   const [data, setData] = useState<T>(),
     [error, setError] = useState(''),
     [loading, setLoading] = useState(true);
@@ -17,20 +26,49 @@ export function useResource<T>(path: string | null) {
       return;
     }
     setError('');
+    const request = ++sequence.current;
     try {
-      setData(await api<T>(path));
+      const result = await api<T>(path);
+      if (request === sequence.current && path === currentPath.current)
+        setData(result);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Ошибка загрузки');
+      if (request === sequence.current && path === currentPath.current)
+        setError(e instanceof Error ? e.message : 'Ошибка загрузки');
     } finally {
-      setLoading(false);
+      if (request === sequence.current && path === currentPath.current)
+        setLoading(false);
     }
   }, [path]);
   useEffect(() => {
     setData(undefined);
     setLoading(true);
     void load();
+    return () => {
+      sequence.current++;
+    };
   }, [load]);
   return { data, error, loading, reload: load };
+}
+export function useChainClock() {
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    let live = true;
+    const update = async () => {
+      try {
+        const value = await api<{ unixTime: number }>('clock');
+        if (live) setNow(value.unixTime);
+      } catch {
+        if (live) setNow(null);
+      }
+    };
+    void update();
+    const timer = setInterval(() => void update(), 2500);
+    return () => {
+      live = false;
+      clearInterval(timer);
+    };
+  }, []);
+  return now;
 }
 export function PageTitle({
   overline,

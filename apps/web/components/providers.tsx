@@ -416,6 +416,8 @@ function WalletProvider({
                 <dd title={prepared.summary.feePayer}>
                   {short(prepared.summary.feePayer)}
                 </dd>
+                <dt>Получатель возврата</dt>
+                <dd className="break-all text-xs">{prepared.summary.guest}</dd>
                 <dt>Получатель удержания</dt>
                 <dd className="break-all text-xs">
                   {prepared.summary.penaltyRecipient}

@@ -6,3 +6,7 @@ target
 apps/web/.next
 packages/chain-client/src/generated
 hackathon-product-plan
+apps/web/next-env.d.ts
+apps/recovery/dist
+test-results
+playwright-report

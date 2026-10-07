@@ -1,12 +1,8 @@
 import { randomUUID, randomBytes } from 'node:crypto';
 import { pool, transaction, type DbClient } from '../../db/src/index';
-import {
-  DomainError,
-  sessionInput,
-  utcNow,
-  type Role,
-} from '../../domain/src/index';
+import { DomainError, sessionInput, type Role } from '../../domain/src/index';
 import { requireRole, sha256 } from './auth';
+import { chainTime } from './chain';
 export async function enqueue(
   db: DbClient,
   kind: string,
@@ -59,7 +55,7 @@ export async function createEvent(
 ) {
   const data = sessionInput.parse(input);
   await requireRole(orgId, wallet, ['owner', 'manager']);
-  if (data.policy.bookingClose <= utcNow())
+  if (data.policy.bookingClose <= (await chainTime()))
     throw new DomainError(
       'DEADLINE',
       'Срок регистрации должен быть в будущем',
@@ -109,19 +105,20 @@ export async function eventDetail(id: string, wallet?: string) {
   );
   if (!r.rowCount)
     throw new DomainError('NOT_FOUND', 'Событие не найдено', 404);
-  const sessions = (
+  let sessions = (
     await pool.query('select * from sessions where event_id=$1', [id])
   ).rows;
-  if (sessions.every((s) => !s.published)) {
-    if (!wallet)
-      throw new DomainError('NOT_FOUND', 'Событие не опубликовано', 404);
-    await requireRole(r.rows[0].org_id, wallet, [
-      'owner',
-      'manager',
-      'staff',
-      'resolver',
-    ]);
-  }
+  const member =
+    wallet &&
+    (
+      await pool.query(
+        'select 1 from memberships where org_id=$1 and wallet=$2',
+        [r.rows[0].org_id, wallet],
+      )
+    ).rowCount;
+  if (!member) sessions = sessions.filter((s) => s.published);
+  if (!sessions.length)
+    throw new DomainError('NOT_FOUND', 'Событие не опубликовано', 404);
   return { ...r.rows[0], sessions };
 }
 export async function reserve(wallet: string, sessionId: string) {
@@ -131,7 +128,11 @@ export async function reserve(wallet: string, sessionId: string) {
       [sessionId],
     );
     const s = r.rows[0];
-    if (!s?.published || s.cancelled || s.policy.bookingClose <= utcNow())
+    if (
+      !s?.published ||
+      s.cancelled ||
+      s.policy.bookingClose <= (await chainTime())
+    )
       throw new DomainError('CLOSED', 'Регистрация недоступна');
     const prior = await db.query(
       'select * from registrations where session_id=$1 and wallet=$2',
@@ -212,7 +213,7 @@ export async function offerNext(db: DbClient, sessionId: string) {
       [sessionId],
     )
   ).rows[0];
-  if (!s || s.cancelled || s.policy.bookingClose <= utcNow()) return;
+  if (!s || s.cancelled || s.policy.bookingClose <= (await chainTime())) return;
   const count = (
     await db.query(
       "select count(*)::int as n from registrations where session_id=$1 and seat_state in ('Offered','Reserved','PaymentPending','Active')",
@@ -310,23 +311,27 @@ export async function checkin(actor: string, eventId: string, token: string) {
       new Date(fresh.ticket_expires).getTime() <= Date.now()
     )
       throw new DomainError('INVALID_QR', 'Билет истёк или неактивен');
-    if (utcNow() < r.policy.checkinOpen || utcNow() >= r.policy.checkinClose)
+    if (
+      (await chainTime()) < r.policy.checkinOpen ||
+      (await chainTime()) >= r.policy.checkinClose
+    )
       throw new DomainError('CHECKIN_WINDOW', 'Приём гостей сейчас закрыт');
     const exists = await db.query(
       'select * from checkins where registration_id=$1',
       [id],
     );
-    if (exists.rowCount)
+    if (exists.rowCount && (!exists.rows[0].corrected || exists.rows[0].frozen))
       return {
         registrationId: id,
         duplicate: true,
         eligibleAt: exists.rows[0].eligible_at,
       };
     const inserted = await db.query(
-      "insert into checkins(registration_id,actor,eligible_at) values($1,$2,now()+interval '30 seconds') returning eligible_at",
+      "insert into checkins(registration_id,actor,eligible_at) values($1,$2,now()+interval '30 seconds') on conflict(registration_id) do update set actor=excluded.actor,corrected=false,revision=checkins.revision+1,eligible_at=excluded.eligible_at returning eligible_at,revision",
       [id, actor],
     );
-    await enqueue(db, 'attest', id, `attest:${id}:1`, { revision: 1 });
+    const revision = inserted.rows[0].revision;
+    await enqueue(db, 'attest', id, `attest:${id}:${revision}`, { revision });
     return {
       registrationId: id,
       duplicate: false,
@@ -359,7 +364,11 @@ export async function saveDispute(
   description: string,
 ) {
   const r = await ownerRegistration(id, wallet);
-  if (utcNow() < r.policy.checkinClose || utcNow() >= r.policy.disputeDeadline)
+  const networkTime = await chainTime();
+  if (
+    networkTime < r.policy.checkinClose ||
+    networkTime >= r.policy.disputeDeadline
+  )
     throw new DomainError('DISPUTE_WINDOW', 'Срок открытия спора недоступен');
   await pool.query(
     'insert into disputes(registration_id,description) values($1,$2) on conflict(registration_id) do update set description=excluded.description where disputes.decision is null',
@@ -376,11 +385,19 @@ export async function saveEvidence(
   return transaction(async (db) => {
     const r = await ownerRegistration(id, wallet, db);
     const dispute = await db.query(
-      'select registration_id from disputes where registration_id=$1 for update',
+      'select registration_id,decision from disputes where registration_id=$1 for update',
       [id],
     );
     if (!dispute.rowCount)
       throw new DomainError('NO_DISPUTE', 'Сначала создайте обращение');
+    if (
+      dispute.rows[0].decision ||
+      (await chainTime()) >= r.policy.resolutionDeadline
+    )
+      throw new DomainError(
+        'DISPUTE_CLOSED',
+        'Материалы закрытого спора не изменяются',
+      );
     const valid =
       mediaType === 'text/plain' ||
       (mediaType === 'image/png' &&
@@ -471,7 +488,7 @@ export async function addSession(
   await requireRole(event.org_id, wallet, ['owner', 'manager']);
   if (
     event.cancelled ||
-    data.policy.bookingClose <= utcNow() ||
+    data.policy.bookingClose <= (await chainTime()) ||
     data.policy.disputeDeadline < Number(event.cancel_deadline)
   )
     throw new DomainError('POLICY', 'Неподходящие сроки сессии', 400);
@@ -506,7 +523,9 @@ export async function eventRegistrations(actor: string, eventId: string) {
       [eventId, role, actor],
     )
   ).rows.map((r) =>
-    role === 'staff' ? { ...r, dispute_description: undefined } : r,
+    r.policy.resolver !== actor && r.wallet !== actor
+      ? { ...r, dispute_description: undefined }
+      : r,
   );
 }
 

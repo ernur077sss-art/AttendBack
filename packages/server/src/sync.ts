@@ -20,7 +20,7 @@ export async function loadRegistration(id: string) {
 }
 async function settlementSignature(id: string, commitment: string) {
   const tracked = await pool.query(
-    `select signature from transaction_intents where registration_id=$1 and status='finalized' and kind in ('settle','timeout') union select signature from outbox where registration_id=$1 and status='done' and kind in ('settle','timeout')`,
+    `select signature from transaction_intents where registration_id=$1 and status in ('submitted','finalized') and kind in ('settle','timeout') union select signature from outbox where registration_id=$1 and status='done' and kind in ('settle','timeout')`,
     [id],
   );
   for (const row of tracked.rows) {
@@ -195,13 +195,13 @@ export async function reconcileIntents() {
               item.registration_id,
             ],
           );
+        if (item.kind === 'publish' || item.kind === 'cancel_event')
+          await syncPublication(item.session_id);
+        if (item.registration_id) await syncDeposit(item.registration_id);
         await pool.query(
           "update transaction_intents set status='finalized',error_code=null where id=$1",
           [item.id],
         );
-        if (item.kind === 'publish' || item.kind === 'cancel_event')
-          await syncPublication(item.session_id);
-        if (item.registration_id) await syncDeposit(item.registration_id);
         continue;
       }
       const height = await chain

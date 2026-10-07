@@ -143,7 +143,7 @@ async function saveIntent(
       program: program.PROGRAM_ADDRESS,
       mint: row.policy.mint,
       principal: row.policy.amount,
-      guest: wallet,
+      guest: row.wallet ?? wallet,
       penaltyRecipient: row.policy.penaltyRecipient,
       penaltyBps: row.policy.penaltyBps,
       feePayer: wallet,

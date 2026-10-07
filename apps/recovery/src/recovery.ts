@@ -43,13 +43,15 @@ export async function readDeposit(
   const rpc = connection(cluster, url);
   if (
     cluster === 'devnet' &&
-    (await rpc.getGenesisHash().send()) !== DEVNET_GENESIS
+    (await rpc
+      .getGenesisHash()
+      .send({ abortSignal: AbortSignal.timeout(15000) })) !== DEVNET_GENESIS
   )
     throw new Error('RPC подключён не к devnet');
   const read = async (addr: Address, size: number, disc: ArrayLike<number>) => {
     const info = await rpc
       .getAccountInfo(addr, { encoding: 'base64', commitment: 'finalized' })
-      .send();
+      .send({ abortSignal: AbortSignal.timeout(15000) });
     if (!info.value || info.value.owner !== program.PROGRAM_ADDRESS)
       throw new Error('Аккаунт отсутствует или принадлежит другой программе');
     const data = Uint8Array.from(atob(info.value.data[0]), (x) =>
@@ -175,7 +177,7 @@ export async function prepareRefund(
       sigVerify: false,
       commitment: 'confirmed',
     })
-    .send();
+    .send({ abortSignal: AbortSignal.timeout(15000) });
   if (sim.value.err)
     throw new Error(
       'Симуляция возврата отклонена. Проверьте SOL для комиссии и повторите чтение.',

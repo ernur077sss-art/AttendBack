@@ -220,3 +220,37 @@ test('stage 6: unavailable chain data cannot release PaymentPending capacity', a
     );
   }
 }, 60000);
+test('stage 8: finalized chain transaction retries its projection after a transient RPC failure', async () => {
+  const f = await fixture();
+  const intent = (
+    await pool.query(
+      "update transaction_intents set status='submitted' where registration_id=$1 and kind='deposit' returning id",
+      [f.r.id],
+    )
+  ).rows[0];
+  const unavailable = vi
+    .spyOn(chain, 'depositSnapshot')
+    .mockRejectedValueOnce(new Error('RPC unavailable'));
+  try {
+    await reconcileIntents();
+    expect(
+      (
+        await pool.query(
+          'select status,error_code from transaction_intents where id=$1',
+          [intent.id],
+        )
+      ).rows[0],
+    ).toEqual({ status: 'submitted', error_code: 'RPC_RECHECK' });
+  } finally {
+    unavailable.mockRestore();
+  }
+  await reconcileIntents();
+  expect(
+    (
+      await pool.query(
+        'select status,error_code from transaction_intents where id=$1',
+        [intent.id],
+      )
+    ).rows[0],
+  ).toEqual({ status: 'finalized', error_code: null });
+}, 60000);

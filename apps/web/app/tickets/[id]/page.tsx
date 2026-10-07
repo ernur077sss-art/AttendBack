@@ -11,6 +11,7 @@ import {
   Terms,
   LoadState,
   useResource,
+  useChainClock,
 } from '../../../components/common';
 import { Button } from '../../../components/ui/button';
 import { Textarea } from '../../../components/ui/textarea';
@@ -31,12 +32,9 @@ function TicketContent() {
     [token, setToken] = useState(''),
     [expires, setExpires] = useState(''),
     [description, setDescription] = useState(''),
-    [now, setNow] = useState(Date.now() / 1000),
+    chainNow = useChainClock(),
+    now = chainNow ?? 0,
     [error, setError] = useState('');
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now() / 1000), 1000);
-    return () => clearInterval(t);
-  }, []);
   useEffect(() => {
     const t = setInterval(() => void r.reload(), 7000);
     return () => clearInterval(t);
@@ -74,10 +72,15 @@ function TicketContent() {
     });
   const row = r.data,
     p = row?.policy,
-    disabled = busy || app.busy;
+    disabled = busy || app.busy || chainNow === null;
   return (
     <div className="page">
       <LoadState {...r} retry={r.reload} />
+      {chainNow === null && (
+        <p role="status" className="mb-4 text-sm text-muted-foreground">
+          Уточняем время сети. Денежные действия доступны после ответа RPC.
+        </p>
+      )}
       {row && p && (
         <>
           <PageTitle
@@ -147,7 +150,7 @@ function TicketContent() {
                         Покажите свежий QR сотруднику. Код действует 2 минуты.
                         Не передавайте его посторонним.
                       </p>
-                      {qr && now < new Date(expires).getTime() / 1000 ? (
+                      {qr && Date.now() < new Date(expires).getTime() ? (
                         <div className="text-center">
                           <img
                             src={qr}

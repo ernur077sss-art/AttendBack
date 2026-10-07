@@ -22,7 +22,12 @@ import {
   saveDispute,
   saveEvidence,
   readEvidence,
+  leaveReservation,
+  eventRegistrations,
+  eventDetail,
+  addSession,
 } from '../../packages/server/src/service';
+import { chainTime } from '../../packages/server/src/chain';
 import { handle } from '../../packages/server/src/http';
 const key = () => {
   const p = generateKeyPairSync('ed25519');
@@ -38,7 +43,6 @@ const owner = key(),
   staff = key(),
   resolver = key(),
   stranger = key();
-const now = () => Math.floor(Date.now() / 1000);
 async function setup(capacity = 1) {
   const org = await createOrganization(
     owner.wallet,
@@ -46,6 +50,7 @@ async function setup(capacity = 1) {
   );
   await addMember(owner.wallet, org.id, staff.wallet, 'staff');
   await addMember(owner.wallet, org.id, resolver.wallet, 'resolver');
+  const networkNow = await chainTime();
   const p = {
     amount: '1000000',
     penaltyBps: 5000,
@@ -54,14 +59,14 @@ async function setup(capacity = 1) {
     attester: key().wallet,
     resolver: resolver.wallet,
     penaltyRecipient: owner.wallet,
-    bookingClose: now() + 600,
-    freeCancelUntil: now() - 100,
-    checkinOpen: now() - 10,
-    checkinClose: now() + 700,
-    proposalCutoff: now() + 800,
-    disputeDeadline: now() + 900,
-    resolutionDeadline: now() + 1000,
-    hardRefundAt: now() + 1100,
+    bookingClose: networkNow + 600,
+    freeCancelUntil: networkNow - 100,
+    checkinOpen: networkNow - 10,
+    checkinClose: networkNow + 700,
+    proposalCutoff: networkNow + 800,
+    disputeDeadline: networkNow + 900,
+    resolutionDeadline: networkNow + 1000,
+    hardRefundAt: networkNow + 1100,
   };
   const event = await createEvent(owner.wallet, org.id, {
     title: 'Integration event',
@@ -196,10 +201,46 @@ test('QR needs active finalized projection; wrong event and foreign staff fail; 
     ),
   ).toBe(1);
   await correctCheckin(staff.wallet, r.id);
+  const rescanned = await checkin(staff.wallet, event.id, t.token);
+  expect(rescanned.duplicate).toBe(false);
+  expect(
+    (
+      await pool.query(
+        'select corrected,revision from checkins where registration_id=$1',
+        [r.id],
+      )
+    ).rows[0],
+  ).toEqual({ corrected: false, revision: 3 });
   await pool.query('update checkins set frozen=true where registration_id=$1', [
     r.id,
   ]);
   await expect(correctCheckin(staff.wallet, r.id)).rejects.toThrow();
+});
+test('leaving an unpaid reservation offers the next guest, but never releases an issued payment permit', async () => {
+  const { event } = await setup(1);
+  const r = await reserve(guest.wallet, event.sessionId),
+    next = await reserve(stranger.wallet, event.sessionId);
+  await expect(leaveReservation(r.id, stranger.wallet)).rejects.toThrow();
+  await leaveReservation(r.id, guest.wallet);
+  expect(
+    (
+      await pool.query('select seat_state from registrations where id=$1', [
+        next.id,
+      ])
+    ).rows[0].seat_state,
+  ).toBe('Offered');
+  await pool.query(
+    'update registrations set permit_expires=9999999999 where id=$1',
+    [next.id],
+  );
+  await expect(leaveReservation(next.id, stranger.wallet)).rejects.toThrow();
+  expect(
+    (
+      await pool.query('select seat_state from registrations where id=$1', [
+        next.id,
+      ])
+    ).rows[0].seat_state,
+  ).toBe('Offered');
 });
 test('evidence is private even when its UUID is known', async () => {
   const { event } = await setup();
@@ -219,9 +260,40 @@ test('evidence is private even when its UUID is known', async () => {
   );
   await expect(readEvidence(stranger.wallet, e.id)).rejects.toThrow();
   await expect(readEvidence(staff.wallet, e.id)).rejects.toThrow();
+  expect(
+    (await eventRegistrations(owner.wallet, event.id))[0].dispute_description,
+  ).toBeUndefined();
+  expect(
+    (await eventRegistrations(resolver.wallet, event.id))[0]
+      .dispute_description,
+  ).toBe('Present at this event, please review');
   await expect(
     saveEvidence(guest.wallet, r.id, 'image/png', Buffer.from('not PNG')),
   ).rejects.toThrow();
+  await pool.query(
+    "update disputes set decision='refund' where registration_id=$1",
+    [r.id],
+  );
+  await expect(
+    saveEvidence(
+      guest.wallet,
+      r.id,
+      'text/plain',
+      Buffer.from('Late evidence'),
+    ),
+  ).rejects.toThrow('закрытого');
+});
+test('public event details never expose unpublished sessions', async () => {
+  const { event, p } = await setup();
+  await addSession(owner.wallet, event.id, {
+    title: 'Private draft',
+    description: 'Draft',
+    location: 'Localhost',
+    capacity: 5,
+    policy: p,
+  });
+  expect((await eventDetail(event.id)).sessions).toHaveLength(1);
+  expect((await eventDetail(event.id, owner.wallet)).sessions).toHaveLength(2);
 });
 test('HTTP protects mutation origin, returns validation errors and never accepts client paid=true', async () => {
   const cross = await handle(

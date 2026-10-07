@@ -24,7 +24,9 @@
     "db:backup-check": "node --import tsx scripts/backup-check.ts",
     "localnet": "NO_DNA=1 node --import tsx scripts/localnet.ts",
     "recovery:build": "vite build --config apps/recovery/vite.config.ts",
-    "recovery:start": "vite preview --config apps/recovery/vite.config.ts"
+    "recovery:start": "vite preview --config apps/recovery/vite.config.ts",
+    "test:e2e": "playwright test",
+    "demo:seed": "node --import tsx scripts/demo.ts"
   },
   "dependencies": {
     "@solana-program/system": "0.15.0",

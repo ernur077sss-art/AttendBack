@@ -51,7 +51,12 @@ async function main() {
     try {
       const origin = req.headers.origin;
       const allowed = process.env.APP_ORIGIN ?? 'http://127.0.0.1:3000';
-      if (origin && ![allowed, 'http://127.0.0.1:4173'].includes(origin)) {
+      if (
+        origin &&
+        ![allowed, 'http://127.0.0.1:3001', 'http://127.0.0.1:4173'].includes(
+          origin,
+        )
+      ) {
         res.writeHead(403).end();
         return;
       }

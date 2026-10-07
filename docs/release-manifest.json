@@ -1,0 +1,29 @@
+{
+  "generatedAt": "2026-10-07T22:04:33.646Z",
+  "sourceBaseCommit": "ba48c4e7c414f7671a258a1ab51e62b08778fa74",
+  "network": "devnet",
+  "rpcUrl": "https://api.devnet.solana.com",
+  "genesis": "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
+  "programId": "6CUM27mNoskjKnCsoywCQz4puZfhpXj5DJWEDZJuiwuV",
+  "programBytes": 265152,
+  "programSha256": "21cf0effb8b753844870b052f76f15d05d003226bd1675990a26fa05465925fc",
+  "idlSha256": "c7d1059b485b009ed3ee6c333d492d84b907a7cda715f631544b0bd3a51580ad",
+  "mint": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+  "mintDecimals": 6,
+  "mintOwner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+  "deployment": "not_performed",
+  "rentEstimateLamports": {
+    "programAccount": "833120",
+    "programDataAtDoubleCapacity": "2694823160",
+    "temporaryBuffer": "1347810360"
+  },
+  "rentNotes": "Read-only estimate for upgradeable loader with max length twice the binary. Temporary buffer rent is recovered after successful deployment; transaction fees are additional. Test SOL only.",
+  "feePayer": null,
+  "upgradeAuthority": null,
+  "bookingAuthority": null,
+  "attester": null,
+  "workerPayer": null,
+  "webUrl": null,
+  "recoveryUrl": null,
+  "hostingCost": "not_selected"
+}

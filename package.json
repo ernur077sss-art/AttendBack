@@ -26,7 +26,9 @@
     "recovery:build": "vite build --config apps/recovery/vite.config.ts",
     "recovery:start": "vite preview --config apps/recovery/vite.config.ts",
     "test:e2e": "playwright test",
-    "demo:seed": "node --import tsx scripts/demo.ts"
+    "demo:seed": "node --import tsx scripts/demo.ts",
+    "release:manifest": "node --import tsx scripts/release-manifest.ts",
+    "release:check": "node --import tsx scripts/check-devnet.ts"
   },
   "dependencies": {
     "@solana-program/system": "0.15.0",

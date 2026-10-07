@@ -9,6 +9,9 @@ import { short } from '../lib/api';
 export function Shell({ children }: { children: ReactNode }) {
   const app = useApp(),
     path = usePathname();
+  const recoveryUrl =
+    process.env.NEXT_PUBLIC_RECOVERY_URL ||
+    (app.config.cluster === 'localnet' ? 'http://127.0.0.1:4173' : null);
   return (
     <>
       <a className="sr-only focus:not-sr-only" href="#main">
@@ -64,14 +67,16 @@ export function Shell({ children }: { children: ReactNode }) {
       <footer className="border-t">
         <div className="shell flex flex-wrap justify-between gap-4 py-6 text-xs text-muted-foreground">
           <span>AttendBack · Место забронировано. Условия зафиксированы.</span>
-          <a
-            className="flex gap-1 underline underline-offset-4"
-            href="http://127.0.0.1:4173"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Резервный возврат <ArrowUpRight size={14} aria-hidden="true" />
-          </a>
+          {recoveryUrl && (
+            <a
+              className="flex gap-1 underline underline-offset-4"
+              href={recoveryUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Резервный возврат <ArrowUpRight size={14} aria-hidden="true" />
+            </a>
+          )}
         </div>
       </footer>
     </>

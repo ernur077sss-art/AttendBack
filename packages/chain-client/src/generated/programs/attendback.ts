@@ -50,7 +50,10 @@ import {
   getCancelRegistrationInstructionAsync,
   getCreateEventInstructionAsync,
   getDepositInstructionAsync,
+  getOpenDisputeInstructionAsync,
+  getProposeNoShowInstruction,
   getPublishPolicyInstructionAsync,
+  getResolveDisputeInstruction,
   getSettleInstructionAsync,
   getTimeoutRefundInstructionAsync,
   parseAttestPresentInstruction,
@@ -58,7 +61,10 @@ import {
   parseCancelRegistrationInstruction,
   parseCreateEventInstruction,
   parseDepositInstruction,
+  parseOpenDisputeInstruction,
+  parseProposeNoShowInstruction,
   parsePublishPolicyInstruction,
+  parseResolveDisputeInstruction,
   parseSettleInstruction,
   parseTimeoutRefundInstruction,
   type AttestPresentInput,
@@ -66,15 +72,21 @@ import {
   type CancelRegistrationAsyncInput,
   type CreateEventAsyncInput,
   type DepositAsyncInput,
+  type OpenDisputeAsyncInput,
   type ParsedAttestPresentInstruction,
   type ParsedCancelEventInstruction,
   type ParsedCancelRegistrationInstruction,
   type ParsedCreateEventInstruction,
   type ParsedDepositInstruction,
+  type ParsedOpenDisputeInstruction,
+  type ParsedProposeNoShowInstruction,
   type ParsedPublishPolicyInstruction,
+  type ParsedResolveDisputeInstruction,
   type ParsedSettleInstruction,
   type ParsedTimeoutRefundInstruction,
+  type ProposeNoShowInput,
   type PublishPolicyAsyncInput,
+  type ResolveDisputeInput,
   type SettleAsyncInput,
   type TimeoutRefundAsyncInput,
 } from '../instructions';
@@ -143,7 +155,10 @@ export enum AttendbackInstruction {
   CancelRegistration,
   CreateEvent,
   Deposit,
+  OpenDispute,
+  ProposeNoShow,
   PublishPolicy,
+  ResolveDispute,
   Settle,
   TimeoutRefund,
 }
@@ -211,12 +226,45 @@ export function identifyAttendbackInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([137, 25, 99, 119, 23, 223, 161, 42]),
+      ),
+      0,
+    )
+  ) {
+    return AttendbackInstruction.OpenDispute;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([115, 13, 94, 241, 134, 213, 180, 124]),
+      ),
+      0,
+    )
+  ) {
+    return AttendbackInstruction.ProposeNoShow;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
         new Uint8Array([48, 1, 101, 147, 0, 239, 136, 36]),
       ),
       0,
     )
   ) {
     return AttendbackInstruction.PublishPolicy;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([231, 6, 202, 6, 96, 103, 12, 230]),
+      ),
+      0,
+    )
+  ) {
+    return AttendbackInstruction.ResolveDispute;
   }
   if (
     containsBytes(
@@ -265,8 +313,17 @@ export type ParsedAttendbackInstruction<
       instructionType: AttendbackInstruction.Deposit;
     } & ParsedDepositInstruction<TProgram>)
   | ({
+      instructionType: AttendbackInstruction.OpenDispute;
+    } & ParsedOpenDisputeInstruction<TProgram>)
+  | ({
+      instructionType: AttendbackInstruction.ProposeNoShow;
+    } & ParsedProposeNoShowInstruction<TProgram>)
+  | ({
       instructionType: AttendbackInstruction.PublishPolicy;
     } & ParsedPublishPolicyInstruction<TProgram>)
+  | ({
+      instructionType: AttendbackInstruction.ResolveDispute;
+    } & ParsedResolveDisputeInstruction<TProgram>)
   | ({
       instructionType: AttendbackInstruction.Settle;
     } & ParsedSettleInstruction<TProgram>)
@@ -314,11 +371,32 @@ export function parseAttendbackInstruction<TProgram extends string>(
         ...parseDepositInstruction(instruction),
       };
     }
+    case AttendbackInstruction.OpenDispute: {
+      assertIsInstructionWithAccounts(instruction);
+      return {
+        instructionType: AttendbackInstruction.OpenDispute,
+        ...parseOpenDisputeInstruction(instruction),
+      };
+    }
+    case AttendbackInstruction.ProposeNoShow: {
+      assertIsInstructionWithAccounts(instruction);
+      return {
+        instructionType: AttendbackInstruction.ProposeNoShow,
+        ...parseProposeNoShowInstruction(instruction),
+      };
+    }
     case AttendbackInstruction.PublishPolicy: {
       assertIsInstructionWithAccounts(instruction);
       return {
         instructionType: AttendbackInstruction.PublishPolicy,
         ...parsePublishPolicyInstruction(instruction),
+      };
+    }
+    case AttendbackInstruction.ResolveDispute: {
+      assertIsInstructionWithAccounts(instruction);
+      return {
+        instructionType: AttendbackInstruction.ResolveDispute,
+        ...parseResolveDisputeInstruction(instruction),
       };
     }
     case AttendbackInstruction.Settle: {
@@ -383,9 +461,21 @@ export type AttendbackPluginInstructions = {
   deposit: (
     input: DepositAsyncInput,
   ) => ReturnType<typeof getDepositInstructionAsync> & SelfPlanAndSendFunctions;
+  openDispute: (
+    input: OpenDisputeAsyncInput,
+  ) => ReturnType<typeof getOpenDisputeInstructionAsync> &
+    SelfPlanAndSendFunctions;
+  proposeNoShow: (
+    input: ProposeNoShowInput,
+  ) => ReturnType<typeof getProposeNoShowInstruction> &
+    SelfPlanAndSendFunctions;
   publishPolicy: (
     input: PublishPolicyAsyncInput,
   ) => ReturnType<typeof getPublishPolicyInstructionAsync> &
+    SelfPlanAndSendFunctions;
+  resolveDispute: (
+    input: ResolveDisputeInput,
+  ) => ReturnType<typeof getResolveDisputeInstruction> &
     SelfPlanAndSendFunctions;
   settle: (
     input: SettleAsyncInput,
@@ -446,10 +536,25 @@ export function attendbackProgram() {
               client,
               getDepositInstructionAsync(input),
             ),
+          openDispute: (input) =>
+            addSelfPlanAndSendFunctions(
+              client,
+              getOpenDisputeInstructionAsync(input),
+            ),
+          proposeNoShow: (input) =>
+            addSelfPlanAndSendFunctions(
+              client,
+              getProposeNoShowInstruction(input),
+            ),
           publishPolicy: (input) =>
             addSelfPlanAndSendFunctions(
               client,
               getPublishPolicyInstructionAsync(input),
+            ),
+          resolveDispute: (input) =>
+            addSelfPlanAndSendFunctions(
+              client,
+              getResolveDisputeInstruction(input),
             ),
           settle: (input) =>
             addSelfPlanAndSendFunctions(

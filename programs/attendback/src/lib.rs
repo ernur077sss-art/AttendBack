@@ -114,6 +114,54 @@ pub mod attendback {
         c.status = DepositStatus::Refundable;
         Ok(())
     }
+    pub fn propose_no_show(ctx: Context<AttesterAction>) -> Result<()> {
+        let now = Clock::get()?.unix_timestamp;
+        let p = &ctx.accounts.policy.terms;
+        require!(!ctx.accounts.event.cancelled, AttendError::Cancelled);
+        require!(
+            now >= p.checkin_close && now < p.proposal_cutoff,
+            AttendError::InvalidTime
+        );
+        require!(
+            ctx.accounts.commitment.status == DepositStatus::Funded,
+            AttendError::InvalidState
+        );
+        ctx.accounts.commitment.status = DepositStatus::NoShowProposed;
+        Ok(())
+    }
+    pub fn open_dispute(ctx: Context<GuestAction>) -> Result<()> {
+        let now = Clock::get()?.unix_timestamp;
+        let p = &ctx.accounts.policy.terms;
+        let c = &mut ctx.accounts.commitment;
+        require!(!ctx.accounts.event.cancelled, AttendError::Cancelled);
+        require!(
+            now >= p.checkin_close && now < p.dispute_deadline,
+            AttendError::InvalidTime
+        );
+        require!(
+            c.status == DepositStatus::Funded || c.status == DepositStatus::NoShowProposed,
+            AttendError::InvalidState
+        );
+        c.status = DepositStatus::Disputed;
+        Ok(())
+    }
+    pub fn resolve_dispute(ctx: Context<ResolverAction>, refund: bool) -> Result<()> {
+        require!(!ctx.accounts.event.cancelled, AttendError::Cancelled);
+        require!(
+            Clock::get()?.unix_timestamp < ctx.accounts.policy.terms.resolution_deadline,
+            AttendError::InvalidTime
+        );
+        require!(
+            ctx.accounts.commitment.status == DepositStatus::Disputed,
+            AttendError::InvalidState
+        );
+        ctx.accounts.commitment.status = if refund {
+            DepositStatus::Refundable
+        } else {
+            DepositStatus::Forfeitable
+        };
+        Ok(())
+    }
     pub fn cancel_event(ctx: Context<CancelEvent>) -> Result<()> {
         require!(
             Clock::get()?.unix_timestamp < ctx.accounts.event.cancel_deadline,
@@ -140,34 +188,58 @@ fn settle_inner(ctx: Context<Settle>, timeout_only: bool) -> Result<()> {
     if timeout_only {
         require!(now >= p.terms.hard_refund_at, AttendError::InvalidTime);
     }
-    require!(
-        ctx.accounts.event.cancelled
-            || now >= p.terms.hard_refund_at
-            || c.status == DepositStatus::Refundable,
-        AttendError::InvalidState
-    );
-    let refund = c.principal;
+    let (refund, penalty) = if ctx.accounts.event.cancelled
+        || now >= p.terms.hard_refund_at
+        || c.status == DepositStatus::Refundable
+    {
+        (c.principal, 0)
+    } else {
+        require!(now >= p.terms.dispute_deadline, AttendError::InvalidTime);
+        require!(
+            c.status == DepositStatus::NoShowProposed || c.status == DepositStatus::Forfeitable,
+            AttendError::InvalidState
+        );
+        penalty_split(c.principal, p.terms.penalty_bps)?
+    };
     let bump = [c.bump];
     let policy_key = p.key();
     let seeds: &[&[u8]] = &[b"commitment", policy_key.as_ref(), c.guest.as_ref(), &bump];
     let signer = &[seeds];
-    token::transfer_checked(
-        CpiContext::new_with_signer(
-            ctx.accounts.token_program.key(),
-            TransferChecked {
-                from: ctx.accounts.vault.to_account_info(),
-                mint: ctx.accounts.mint.to_account_info(),
-                to: ctx.accounts.guest_tokens.to_account_info(),
-                authority: c.to_account_info(),
-            },
-            signer,
-        ),
-        refund,
-        p.decimals,
-    )?;
+    if refund > 0 {
+        token::transfer_checked(
+            CpiContext::new_with_signer(
+                ctx.accounts.token_program.key(),
+                TransferChecked {
+                    from: ctx.accounts.vault.to_account_info(),
+                    mint: ctx.accounts.mint.to_account_info(),
+                    to: ctx.accounts.guest_tokens.to_account_info(),
+                    authority: c.to_account_info(),
+                },
+                signer,
+            ),
+            refund,
+            p.decimals,
+        )?;
+    }
+    if penalty > 0 {
+        token::transfer_checked(
+            CpiContext::new_with_signer(
+                ctx.accounts.token_program.key(),
+                TransferChecked {
+                    from: ctx.accounts.vault.to_account_info(),
+                    mint: ctx.accounts.mint.to_account_info(),
+                    to: ctx.accounts.penalty_tokens.to_account_info(),
+                    authority: c.to_account_info(),
+                },
+                signer,
+            ),
+            penalty,
+            p.decimals,
+        )?;
+    }
     let c = &mut ctx.accounts.commitment;
     c.status = DepositStatus::Settled;
     c.refund = refund;
-    c.penalty = 0;
+    c.penalty = penalty;
     Ok(())
 }

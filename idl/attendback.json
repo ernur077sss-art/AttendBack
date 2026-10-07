@@ -311,6 +311,108 @@
       ]
     },
     {
+      "name": "open_dispute",
+      "discriminator": [
+        137,
+        25,
+        99,
+        119,
+        23,
+        223,
+        161,
+        42
+      ],
+      "accounts": [
+        {
+          "name": "guest",
+          "signer": true,
+          "relations": [
+            "commitment"
+          ]
+        },
+        {
+          "name": "policy",
+          "relations": [
+            "commitment"
+          ]
+        },
+        {
+          "name": "event",
+          "relations": [
+            "policy"
+          ]
+        },
+        {
+          "name": "commitment",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  109,
+                  109,
+                  105,
+                  116,
+                  109,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "policy"
+              },
+              {
+                "kind": "account",
+                "path": "guest"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "propose_no_show",
+      "discriminator": [
+        115,
+        13,
+        94,
+        241,
+        134,
+        213,
+        180,
+        124
+      ],
+      "accounts": [
+        {
+          "name": "attester",
+          "signer": true
+        },
+        {
+          "name": "policy",
+          "relations": [
+            "commitment"
+          ]
+        },
+        {
+          "name": "event",
+          "relations": [
+            "policy"
+          ]
+        },
+        {
+          "name": "commitment",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "publish_policy",
       "discriminator": [
         48,
@@ -386,6 +488,47 @@
               "name": "Terms"
             }
           }
+        }
+      ]
+    },
+    {
+      "name": "resolve_dispute",
+      "discriminator": [
+        231,
+        6,
+        202,
+        6,
+        96,
+        103,
+        12,
+        230
+      ],
+      "accounts": [
+        {
+          "name": "resolver",
+          "signer": true
+        },
+        {
+          "name": "policy",
+          "relations": [
+            "commitment"
+          ]
+        },
+        {
+          "name": "event",
+          "relations": [
+            "policy"
+          ]
+        },
+        {
+          "name": "commitment",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "refund",
+          "type": "bool"
         }
       ]
     },

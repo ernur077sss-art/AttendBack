@@ -1,0 +1,20 @@
+[package]
+name = "attendback"
+version = "0.1.0"
+edition = "2021"
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "attendback"
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+anchor-debug = []
+custom-heap = []
+custom-panic = []
+[dependencies]
+anchor-lang = "=1.2.1"
+anchor-spl = { version = "=1.2.1", default-features = false, features = ["solana-v3", "token", "token_2022", "associated_token"] }

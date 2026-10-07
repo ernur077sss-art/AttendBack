@@ -1,0 +1,15 @@
+packages: []
+storeDir: .local/pnpm-store
+allowBuilds:
+  '@embedded-postgres/darwin-arm64': true
+  '@embedded-postgres/linux-x64': true
+  '@embedded-postgres/linux-arm64': true
+  esbuild: true
+  sharp: true
+  '@embedded-postgres/darwin-x64': false
+  '@embedded-postgres/linux-arm': false
+  '@embedded-postgres/linux-ia32': false
+  '@embedded-postgres/linux-ppc64': false
+  '@embedded-postgres/windows-x64': false
+minimumReleaseAgeExclude:
+  - '@solana/kit-plugin-wallet@0.21.0'

@@ -1,0 +1,17 @@
+.DS_Store
+node_modules/
+.local/
+.pnpm-store/
+.next/
+dist/
+target/
+.anchor/
+.env
+.env.*
+!.env.example
+*.log
+*.tsbuildinfo
+coverage/
+test-results/
+playwright-report/
+*-keypair.json

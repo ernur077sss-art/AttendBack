@@ -1,0 +1,15 @@
+#!/bin/sh
+set -eu
+task_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+if ! command -v node >/dev/null 2>&1; then
+  task_node="$HOME/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin"
+  export PATH="$task_node:$PATH"
+fi
+if command -v pnpm >/dev/null 2>&1; then
+  exec pnpm "$@"
+fi
+if [ -f "$task_root/.local/toolchain/pnpm/bin/pnpm.cjs" ]; then
+  exec node "$task_root/.local/toolchain/pnpm/bin/pnpm.cjs" "$@"
+fi
+echo 'Install the pnpm version specified in package.json, then retry.' >&2
+exit 1

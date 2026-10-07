@@ -1,0 +1,24 @@
+name: AttendBack checks
+on: [push, pull_request]
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18.4
+        env:
+          POSTGRES_USER: attendback
+          POSTGRES_PASSWORD: attendback
+          POSTGRES_DB: attendback
+        ports: ['54329:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.19.0'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '11.25.0'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check

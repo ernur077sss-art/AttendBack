@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgres:18.4
+    environment:
+      POSTGRES_USER: attendback
+      POSTGRES_PASSWORD: attendback
+      POSTGRES_DB: attendback
+    ports:
+      - '127.0.0.1:54329:5432'
+    volumes:
+      - postgres:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U attendback']
+      interval: 5s
+      retries: 10
+volumes:
+  postgres:

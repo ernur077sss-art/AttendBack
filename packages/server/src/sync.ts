@@ -182,6 +182,19 @@ export async function reconcileIntents() {
         continue;
       }
       if (status?.confirmationStatus === 'finalized') {
+        // Project the decision before marking the intent complete, so a DB error is retried.
+        if (
+          item.registration_id &&
+          ['resolve_refund', 'resolve_forfeit'].includes(item.kind)
+        )
+          await pool.query(
+            'update disputes set decision=$1,resolver=$2 where registration_id=$3',
+            [
+              item.kind === 'resolve_refund' ? 'refund' : 'forfeit',
+              item.wallet,
+              item.registration_id,
+            ],
+          );
         await pool.query(
           "update transaction_intents set status='finalized',error_code=null where id=$1",
           [item.id],

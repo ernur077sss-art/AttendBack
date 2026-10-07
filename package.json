@@ -7,8 +7,8 @@
     "node": ">=24 <25"
   },
   "scripts": {
-    "dev": "next dev apps/web --hostname 127.0.0.1",
-    "build": "next build apps/web",
+    "dev": "NEXT_TELEMETRY_DISABLED=1 next dev apps/web --webpack --hostname 127.0.0.1",
+    "build": "NEXT_TELEMETRY_DISABLED=1 next build apps/web --webpack",
     "start": "next start apps/web --hostname 127.0.0.1",
     "worker": "node --import tsx apps/worker/src/index.ts",
     "db:start": "node --import tsx scripts/postgres.ts",
@@ -22,7 +22,9 @@
     "program:build": "NO_DNA=1 anchor build",
     "test:db": "vitest run --config vitest.db.config.ts",
     "db:backup-check": "node --import tsx scripts/backup-check.ts",
-    "localnet": "NO_DNA=1 node --import tsx scripts/localnet.ts"
+    "localnet": "NO_DNA=1 node --import tsx scripts/localnet.ts",
+    "recovery:build": "vite build --config apps/recovery/vite.config.ts",
+    "recovery:start": "vite preview --config apps/recovery/vite.config.ts"
   },
   "dependencies": {
     "@solana-program/system": "0.15.0",
@@ -33,12 +35,20 @@
     "@solana/kit-plugin-wallet": "0.21.0",
     "@solana/react": "8.4.0",
     "@solana/sysvars": "8.4.0",
+    "@tailwindcss/postcss": "4.3.3",
+    "@wallet-standard/wallet": "1.1.1",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "jsqr": "1.4.0",
     "lucide-react": "1.52.0",
     "next": "16.4.0",
     "pg": "8.23.1",
     "qrcode": "1.5.4",
+    "radix-ui": "^1.7.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "tailwind-merge": "3.7.0",
+    "tailwindcss": "4.3.3",
     "zod": "4.6.5"
   },
   "devDependencies": {
@@ -58,6 +68,7 @@
     "prettier": "3.8.5",
     "tsx": "4.23.15",
     "typescript": "7.0.2",
+    "vite": "8.3.3",
     "vitest": "5.0.3"
   }
 }

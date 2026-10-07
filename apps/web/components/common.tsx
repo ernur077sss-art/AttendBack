@@ -1,0 +1,219 @@
+'use client';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import Link from 'next/link';
+import { ArrowRight, CalendarDays, MapPin, ShieldCheck } from 'lucide-react';
+import { api, date, type Event, statuses } from '../lib/api';
+import type { Policy } from '../../../packages/domain/src';
+import { displayAmount } from '../../../packages/domain/src';
+import { useApp } from './providers';
+import { Button } from './ui/button';
+export function useResource<T>(path: string | null) {
+  const [data, setData] = useState<T>(),
+    [error, setError] = useState(''),
+    [loading, setLoading] = useState(true);
+  const load = useCallback(async () => {
+    if (!path) {
+      setLoading(false);
+      return;
+    }
+    setError('');
+    try {
+      setData(await api<T>(path));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Ошибка загрузки');
+    } finally {
+      setLoading(false);
+    }
+  }, [path]);
+  useEffect(() => {
+    setData(undefined);
+    setLoading(true);
+    void load();
+  }, [load]);
+  return { data, error, loading, reload: load };
+}
+export function PageTitle({
+  overline,
+  title,
+  description,
+  action,
+}: {
+  overline?: string;
+  title: string;
+  description?: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-6">
+      <div className="max-w-2xl">
+        {overline && <p className="eyebrow mb-3">{overline}</p>}
+        <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
+          {title}
+        </h1>
+        {description && (
+          <p className="mt-3 text-muted-foreground leading-7">{description}</p>
+        )}
+      </div>
+      {action}
+    </div>
+  );
+}
+export function LoadState({
+  loading,
+  error,
+  retry,
+}: {
+  loading: boolean;
+  error: string;
+  retry: () => unknown;
+}) {
+  return loading ? (
+    <div className="panel" role="status">
+      Загружаем данные…
+    </div>
+  ) : error ? (
+    <div className="panel border-destructive">
+      <p role="alert" className="mb-4">
+        {error}
+      </p>
+      <Button variant="outline" onClick={() => void retry()}>
+        Повторить
+      </Button>
+    </div>
+  ) : null;
+}
+export function Empty({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="panel py-12 text-center">
+      <h2 className="text-xl font-semibold mb-3">{title}</h2>
+      <div className="text-muted-foreground">{children}</div>
+    </div>
+  );
+}
+export function AuthGate({ children }: { children: ReactNode }) {
+  const app = useApp();
+  return app.me ? (
+    <>{children}</>
+  ) : (
+    <div className="page">
+      <Empty title="Войдите, чтобы продолжить">
+        <p className="mb-6">
+          Билеты и права доступа привязаны к вашему кошельку.
+        </p>
+        <Button onClick={app.login}>Подключить кошелёк</Button>
+      </Empty>
+    </div>
+  );
+}
+export function Status({ value }: { value: string | null }) {
+  return (
+    <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-medium">
+      {value ? (statuses[value] ?? value) : 'Без залога'}
+    </span>
+  );
+}
+export function EventCard({ event }: { event: Event }) {
+  return (
+    <article className="panel flex flex-col gap-5">
+      <div className="flex items-center justify-between gap-3">
+        <p className="eyebrow">{event.organization}</p>
+        <span className="text-xs text-muted-foreground">
+          {event.cancelled
+            ? 'Отменено'
+            : `${Math.max(0, event.capacity - event.occupied)} из ${event.capacity} мест`}
+        </span>
+      </div>
+      <div>
+        <h2 className="text-xl font-semibold">
+          <Link
+            href={`/events/${event.id}`}
+            className="hover:underline underline-offset-4"
+          >
+            {event.title}
+          </Link>
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+          {event.description}
+        </p>
+      </div>
+      <div className="grid gap-2 text-sm text-muted-foreground">
+        <span className="flex gap-2">
+          <CalendarDays size={16} aria-hidden="true" />
+          {date(event.policy.checkinOpen)}
+        </span>
+        <span className="flex gap-2">
+          <MapPin size={16} aria-hidden="true" />
+          {event.location}
+        </span>
+      </div>
+      <div className="mt-auto flex items-center justify-between border-t pt-5">
+        <div>
+          <strong className="text-xl font-semibold tabular-nums">
+            {displayAmount(event.policy.amount)} USDC
+          </strong>
+          <p className="text-xs text-muted-foreground">
+            возвратный залог · тест
+          </p>
+        </div>
+        <Link
+          className="flex min-h-10 items-center gap-2 text-sm font-semibold"
+          href={`/events/${event.id}`}
+        >
+          Подробнее
+          <ArrowRight size={16} aria-hidden="true" />
+        </Link>
+      </div>
+    </article>
+  );
+}
+export function Terms({ policy: p }: { policy: Policy }) {
+  return (
+    <div className="panel">
+      <h2 className="mb-5 flex items-center gap-2 text-lg font-semibold">
+        <ShieldCheck size={20} aria-hidden="true" />
+        Условия залога
+      </h2>
+      <dl className="review-grid">
+        <dt>Залог</dt>
+        <dd>{displayAmount(p.amount)} тестовых USDC</dd>
+        <dt>После посещения</dt>
+        <dd>100% залога после подтверждения сотрудником</dd>
+        <dt>Бесплатная отмена</dt>
+        <dd>До {date(p.freeCancelUntil)}</dd>
+        <dt>Поздняя отмена / неявка</dt>
+        <dd>Удержание {p.penaltyBps / 100}%, после окна оспаривания</dd>
+        <dt>Время входа</dt>
+        <dd>
+          {date(p.checkinOpen)} — {date(p.checkinClose)}
+        </dd>
+        <dt>Открыть спор</dt>
+        <dd>После окончания входа, до {date(p.disputeDeadline)}</dd>
+        <dt>Решение арбитра</dt>
+        <dd>До {date(p.resolutionDeadline)}</dd>
+        <dt>Защитный возврат</dt>
+        <dd>С {date(p.hardRefundAt)} — весь незавершённый залог</dd>
+      </dl>
+      <details className="mt-5 text-xs">
+        <summary className="cursor-pointer min-h-10 py-2 text-muted-foreground">
+          Адреса и доверие
+        </summary>
+        <p className="my-2">
+          Присутствие подтверждает сотрудник, спор решает назначенный арбитр.
+          Комиссии Solana и хранение аккаунтов не входят в залог. Программа
+          обновляема владельцем upgrade authority.
+        </p>
+        <dl className="grid gap-2 break-all">
+          <dt>Арбитр: {p.resolver}</dt>
+          <dt>Получатель удержания: {p.penaltyRecipient}</dt>
+          <dt>Mint: {p.mint}</dt>
+        </dl>
+      </details>
+    </div>
+  );
+}

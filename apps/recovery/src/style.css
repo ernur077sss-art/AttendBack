@@ -1,0 +1,91 @@
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #1c1917;
+  background: #fafaf9;
+  line-height: 1.6;
+}
+* {
+  box-sizing: border-box;
+}
+main {
+  max-width: 48rem;
+  margin: 3rem auto;
+  padding: 0 1rem;
+}
+h1 {
+  font-size: 2.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+}
+h2 {
+  font-size: 1.2rem;
+}
+section {
+  border: 1px solid #d6d3d1;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  margin: 1.5rem 0;
+}
+label {
+  display: grid;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+input,
+select,
+button {
+  font: inherit;
+  min-height: 44px;
+  border: 1px solid #a8a29e;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: white;
+  color: inherit;
+  max-width: 100%;
+}
+input,
+select {
+  width: 100%;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+button:hover:not(:disabled) {
+  background: #f0efec;
+}
+:focus-visible {
+  outline: 2px solid #292524;
+  outline-offset: 3px;
+}
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.mono {
+  font-family: monospace;
+  overflow-wrap: anywhere;
+  font-size: 0.8rem;
+}
+.eyebrow,
+.small {
+  font-size: 0.8rem;
+  color: #57534e;
+}
+dt {
+  color: #57534e;
+}
+dd {
+  margin: 0 0 1rem;
+}
+.message {
+  overflow-wrap: anywhere;
+}
+.confirm {
+  border: 2px solid #292524;
+}

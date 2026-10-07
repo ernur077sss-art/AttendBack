@@ -87,6 +87,14 @@ export async function handle(req: Request) {
     if (
       method === 'POST' &&
       parts[0] === 'registrations' &&
+      parts[2] === 'leave'
+    )
+      return json(await service.leaveReservation(uuid.parse(parts[1]), wallet));
+    if (method === 'GET' && parts[0] === 'disputes' && parts[2] === 'evidence')
+      return json(await service.evidenceList(wallet, uuid.parse(parts[1])));
+    if (
+      method === 'POST' &&
+      parts[0] === 'registrations' &&
       parts[2] === 'sync'
     ) {
       await service.registration(uuid.parse(parts[1]), wallet);

@@ -249,6 +249,42 @@ export async function ticket(id: string, wallet: string) {
     return { token: `${id}.${secret}`, expiresAt: expiresAt.toISOString() };
   });
 }
+export async function leaveReservation(id: string, wallet: string) {
+  return transaction(async (db) => {
+    const r = await ownerRegistration(id, wallet, db);
+    await db.query('select id from sessions where id=$1 for update', [
+      r.session_id,
+    ]);
+    const fresh = (
+      await db.query('select * from registrations where id=$1 for update', [id])
+    ).rows[0];
+    if (
+      !['Waitlisted', 'Offered', 'Reserved'].includes(fresh.seat_state) ||
+      fresh.permit_expires ||
+      fresh.deposit_address
+    )
+      throw new DomainError(
+        'PAYMENT_CHECK',
+        'Сначала завершите проверку залога. Выданное разрешение нельзя отменить таймером.',
+      );
+    await releaseAndOffer(db, id);
+    return { released: true };
+  });
+}
+export async function evidenceList(actor: string, id: string) {
+  const r = await registration(id, actor);
+  if (r.wallet !== actor) {
+    await requireRole(r.org_id, actor, ['owner', 'resolver']);
+    if (r.policy.resolver !== actor)
+      throw new DomainError('FORBIDDEN', 'Назначен другой арбитр', 403);
+  }
+  return (
+    await pool.query(
+      'select id,media_type,size,expires_at from evidence where registration_id=$1 and expires_at>now()',
+      [id],
+    )
+  ).rows;
+}
 export async function checkin(actor: string, eventId: string, token: string) {
   const [id, secret, ...extra] = token.split('.');
   if (!id || !secret || extra.length || !/^[0-9a-f-]{36}$/.test(id))
@@ -280,13 +316,22 @@ export async function checkin(actor: string, eventId: string, token: string) {
       'select * from checkins where registration_id=$1',
       [id],
     );
-    if (exists.rowCount) return { registrationId: id, duplicate: true };
-    await db.query(
-      "insert into checkins(registration_id,actor,eligible_at) values($1,$2,now()+interval '30 seconds')",
+    if (exists.rowCount)
+      return {
+        registrationId: id,
+        duplicate: true,
+        eligibleAt: exists.rows[0].eligible_at,
+      };
+    const inserted = await db.query(
+      "insert into checkins(registration_id,actor,eligible_at) values($1,$2,now()+interval '30 seconds') returning eligible_at",
       [id, actor],
     );
     await enqueue(db, 'attest', id, `attest:${id}:1`, { revision: 1 });
-    return { registrationId: id, duplicate: false };
+    return {
+      registrationId: id,
+      duplicate: false,
+      eligibleAt: inserted.rows[0].eligible_at,
+    };
   });
 }
 export async function correctCheckin(actor: string, id: string) {

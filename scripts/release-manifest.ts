@@ -27,12 +27,19 @@ async function main() {
     !mint.data.isInitialized
   )
     throw new Error('Unexpected devnet mint owner or decimals');
-  const rent = async (bytes: number) =>
-    (
-      await rpc
-        .getMinimumBalanceForRentExemption(BigInt(bytes))
-        .send({ abortSignal: AbortSignal.timeout(15000) })
-    ).toString();
+  const rent = (bytes: number) =>
+    rpc
+      .getMinimumBalanceForRentExemption(BigInt(bytes))
+      .send({ abortSignal: AbortSignal.timeout(15000) });
+  const [programRent, programDataRent, bufferRent] = await Promise.all([
+    rent(36),
+    rent(45 + binary.length),
+    rent(37 + binary.length),
+  ]);
+  const peakAccountFunding = programRent + programDataRent;
+  const initialFundingTarget =
+    ((peakAccountFunding + 250_000_000n + 999_999_999n) / 1_000_000_000n) *
+    1_000_000_000n;
   const manifest = {
     generatedAt: new Date().toISOString(),
     sourceBaseCommit: execFileSync('git', ['rev-parse', 'HEAD'], {
@@ -49,13 +56,17 @@ async function main() {
     mintDecimals: mint.data.decimals,
     mintOwner: mint.programAddress,
     deployment: 'not_performed',
+    programMaxLengthBytes: binary.length,
     rentEstimateLamports: {
-      programAccount: await rent(36),
-      programDataAtDoubleCapacity: await rent(45 + binary.length * 2),
-      temporaryBuffer: await rent(37 + binary.length),
+      programAccount: programRent.toString(),
+      programData: programDataRent.toString(),
+      temporaryBufferMinimum: bufferRent.toString(),
+      initialBufferFunding: programDataRent.toString(),
+      peakAccountFunding: peakAccountFunding.toString(),
     },
+    initialFundingTargetLamports: initialFundingTarget.toString(),
     rentNotes:
-      'Read-only estimate for upgradeable loader with max length twice the binary. Temporary buffer rent is recovered after successful deployment; transaction fees are additional. Test SOL only.',
+      'Read-only estimate for a new deployment with --max-len equal to programMaxLengthBytes. Agave 4.3.0 funds the buffer with the ProgramData rent, then the loader returns those lamports to the payer before creating ProgramData. Do not add buffer rent a second time. Transaction fees, retries, service funding and future program growth are additional; the funding target is a reserve, not a measured deployment cost. Test SOL only.',
     feePayer: null,
     upgradeAuthority: null,
     bookingAuthority: null,

@@ -8,7 +8,7 @@
 - `attendback-signer`: отдельный Next.js-проект только для подписей; Root Directory `apps/signer`, регион `iad1`. Production deployment `dpl_yvj8HQmbJeqquwGcHxXQxpHkpJJ4` из коммита `5e2aafa` получил READY. HTTPS `/api/sign` и `/api/health` без токена возвращают 401; авторизованный health пока возвращает 503, так как программа в devnet ещё не выпущена. Полноценное подписание в облаке пока не проверено.
 - [attendback-recovery](https://attendback-recovery.vercel.app): опубликованная независимая страница возврата, по умолчанию devnet на публичном домене.
 - `neon-coquelicot-ridge`: Neon Free, Washington/`iad1`, подключена к проекту web. При проверке в облачной `public` было 0 таблиц; миграции пока не выполнены.
-- Программа `6CUM27mNoskjKnCsoywCQz4puZfhpXj5DJWEDZJuiwuV` пока не опубликована в devnet. Требуется около 5 бесплатных тестовых SOL на deployer `J5kbjJauYkCTLsBv8toEhttJbpvrL2Bd9mnQrx7qcWMC`.
+- Программа `6CUM27mNoskjKnCsoywCQz4puZfhpXj5DJWEDZJuiwuV` пока не опубликована в devnet. Для текущего бинарника планируем 2 бесплатных тестовых SOL на deployer `J5kbjJauYkCTLsBv8toEhttJbpvrL2Bd9mnQrx7qcWMC`: около 1,349 SOL на аккаунты программы, остальное — резерв на комиссии и сервисного плательщика. Выделяем память по размеру бинарника (`--max-len 265152`); увеличение при будущих обновлениях потребует дополнительных SOL. Прежняя оценка 5 SOL была завышена: rent буфера нельзя повторно прибавлять к ProgramData. [Расчёт](devnet-release.ru.md#стоимость-и-недостающие-параметры).
 
 ## Очередь без постоянного сервера
 

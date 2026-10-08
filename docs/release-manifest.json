@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-07T22:04:33.646Z",
-  "sourceBaseCommit": "ba48c4e7c414f7671a258a1ab51e62b08778fa74",
+  "generatedAt": "2026-10-08T20:11:58.834Z",
+  "sourceBaseCommit": "3bfb2452e9407f12a99f3fe0b78418d479fb4d34",
   "network": "devnet",
   "rpcUrl": "https://api.devnet.solana.com",
   "genesis": "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
@@ -12,12 +12,16 @@
   "mintDecimals": 6,
   "mintOwner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
   "deployment": "not_performed",
+  "programMaxLengthBytes": 265152,
   "rentEstimateLamports": {
     "programAccount": "833120",
-    "programDataAtDoubleCapacity": "2694823160",
-    "temporaryBuffer": "1347810360"
+    "programData": "1347851000",
+    "temporaryBufferMinimum": "1347810360",
+    "initialBufferFunding": "1347851000",
+    "peakAccountFunding": "1348684120"
   },
-  "rentNotes": "Read-only estimate for upgradeable loader with max length twice the binary. Temporary buffer rent is recovered after successful deployment; transaction fees are additional. Test SOL only.",
+  "initialFundingTargetLamports": "2000000000",
+  "rentNotes": "Read-only estimate for a new deployment with --max-len equal to programMaxLengthBytes. Agave 4.3.0 funds the buffer with the ProgramData rent, then the loader returns those lamports to the payer before creating ProgramData. Do not add buffer rent a second time. Transaction fees, retries, service funding and future program growth are additional; the funding target is a reserve, not a measured deployment cost. Test SOL only.",
   "feePayer": null,
   "upgradeAuthority": null,
   "bookingAuthority": null,

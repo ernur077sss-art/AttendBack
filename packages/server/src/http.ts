@@ -1,4 +1,5 @@
 import { syncDeposit } from './sync';
+import { assertHostedConfiguration } from './deployment';
 import { chainTime } from './chain';
 import * as chainService from './chain-service';
 import { z, ZodError } from 'zod';
@@ -55,6 +56,7 @@ async function body(req: Request, max = 65536) {
 }
 export async function handle(req: Request) {
   try {
+    assertHostedConfiguration();
     const parts = new URL(req.url).pathname.split('/').filter(Boolean).slice(1);
     const key = parts.join('/'),
       method = req.method;

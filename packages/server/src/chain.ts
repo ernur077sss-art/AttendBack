@@ -27,6 +27,7 @@ import {
 import { signer } from '@solana/kit-plugin-signer';
 import { solanaRpc } from '@solana/kit-plugin-rpc';
 import { DomainError } from '../../domain/src/index';
+import { assertHostedConfiguration } from './deployment';
 import {
   PROGRAM_ADDRESS,
   getPolicyDecoder,
@@ -40,6 +41,7 @@ import {
   getEventRecordDiscriminatorBytes,
 } from '../../chain-client/src/index';
 export function network() {
+  assertHostedConfiguration();
   const cluster = process.env.SOLANA_CLUSTER ?? 'localnet';
   const rpcUrl = process.env.SOLANA_RPC_URL ?? 'http://127.0.0.1:8899';
   const url = new URL(rpcUrl);

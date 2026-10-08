@@ -226,6 +226,7 @@ pnpm test:e2e
 
 ## Материалы
 
+- [Подготовка к Vercel](docs/vercel.ru.md) — web/API и отдельный проект возврата.
 - [Продуктовая спецификация](hackathon-product-plan/product-plan.ru.md)
 - [Сценарий демонстрации](docs/demo.ru.md)
 - [Архитектура](docs/architecture.ru.md) и [денежный протокол](docs/protocol.ru.md)

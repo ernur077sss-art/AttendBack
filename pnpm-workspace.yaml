@@ -1,4 +1,6 @@
-packages: []
+packages:
+  - apps/web
+  - apps/recovery
 storeDir: .local/pnpm-store
 allowBuilds:
   '@embedded-postgres/darwin-arm64': true

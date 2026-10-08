@@ -1,0 +1,12 @@
+{
+  "name": "@attendback/recovery",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "build": "pnpm --dir ../.. recovery:build"
+  }
+}

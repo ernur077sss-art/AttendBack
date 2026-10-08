@@ -8,10 +8,10 @@ import {
 import { address, getAddressEncoder } from '@solana/kit';
 import { pool, transaction, type DbClient } from '../../db/src/index';
 import { DomainError, type Role } from '../../domain/src/index';
+import { applicationOrigin } from './deployment';
 export const sha256 = (value: string | Uint8Array) =>
   createHash('sha256').update(value).digest('hex');
-export const appOrigin = () =>
-  process.env.APP_ORIGIN ?? 'http://127.0.0.1:3000';
+export const appOrigin = applicationOrigin;
 export async function requireRole(
   orgId: string,
   wallet: string,

@@ -9,6 +9,8 @@
   "scripts": {
     "dev": "NEXT_TELEMETRY_DISABLED=1 next dev apps/web --webpack --hostname 127.0.0.1",
     "build": "NEXT_TELEMETRY_DISABLED=1 next build apps/web --webpack",
+    "build:vercel": "pnpm vercel:check && pnpm build",
+    "vercel:check": "node --import tsx scripts/check-vercel.ts",
     "start": "next start apps/web --hostname 127.0.0.1",
     "worker": "node --import tsx apps/worker/src/index.ts",
     "signer": "node --import tsx apps/signer/src/index.ts",
@@ -42,6 +44,7 @@
     "@solana/react": "8.4.0",
     "@solana/sysvars": "8.4.0",
     "@tailwindcss/postcss": "4.3.3",
+    "@vercel/functions": "3.9.11",
     "@wallet-standard/wallet": "1.1.1",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",

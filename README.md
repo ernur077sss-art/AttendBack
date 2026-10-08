@@ -226,6 +226,7 @@ Full roadmap: [approved development plan](hackathon-product-plan/development-pla
 
 ## Resources
 
+- [Vercel deployment setup](docs/vercel.ru.md) — web/API and an independent recovery project.
 - [Product specification](hackathon-product-plan/product-plan.ru.md)
 - [Demo walkthrough](docs/demo.ru.md)
 - [Architecture](docs/architecture.ru.md) and [payment protocol](docs/protocol.ru.md)

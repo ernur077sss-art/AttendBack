@@ -193,6 +193,7 @@ export async function fixture(overrides: Partial<TermsArgs> = {}) {
   };
   return {
     client,
+    feePayer,
     svm,
     send,
     time,

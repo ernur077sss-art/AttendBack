@@ -10,6 +10,7 @@ target/
 .env.*
 !.env.example
 !.env.devnet.example
+!.env.signer.example
 *.log
 *.tsbuildinfo
 coverage/

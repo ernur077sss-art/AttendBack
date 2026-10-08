@@ -93,7 +93,7 @@ export async function serviceSigner(
             getBase64EncodedWireTransaction(t),
           ),
         }),
-        signal: AbortSignal.timeout(10000),
+        signal: AbortSignal.timeout(30000),
       });
       if (!response.ok) throw new Error('Signer unavailable');
       const data = await response.json();

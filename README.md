@@ -9,6 +9,7 @@
 - [Продуктовая спецификация](hackathon-product-plan/product-plan.ru.md)
 - [Сценарий демонстрации](docs/demo.ru.md)
 - [Пакет devnet-релиза и оставшиеся настройки](docs/devnet-release.ru.md)
+- [Сервис подписи devnet](docs/signer.ru.md)
 
 ## Окружение
 
@@ -67,6 +68,7 @@ GitHub workflow строит SBF до программных тестов, пр�
 
 - `apps/web`: Next.js, роли, кошелёк, API; `apps/worker`: очередь и сверка сети.
 - `apps/recovery`: независимый статический клиент возврата.
+- `apps/signer`: отдельный процесс проверки и подписи разрешённых devnet-транзакций; служебные секреты монтируются отдельно от web/worker.
 - `programs/attendback`: Anchor; `idl` и `packages/chain-client`: сгенерированный Codama-клиент.
 - `packages/db`: PostgreSQL и миграции; `packages/domain`: правила и денежные типы.
 - [Архитектура](docs/architecture.ru.md), [денежный протокол](docs/protocol.ru.md), [ревью](docs/review.html), [ограничения окружения](docs/runtime-notes.ru.md).

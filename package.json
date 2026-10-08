@@ -11,6 +11,8 @@
     "build": "NEXT_TELEMETRY_DISABLED=1 next build apps/web --webpack",
     "start": "next start apps/web --hostname 127.0.0.1",
     "worker": "node --import tsx apps/worker/src/index.ts",
+    "signer": "node --import tsx apps/signer/src/index.ts",
+    "test:signer": "vitest run apps/signer",
     "db:start": "node --import tsx scripts/postgres.ts",
     "db:migrate": "node --import tsx packages/db/src/migrate.ts",
     "test": "vitest run",

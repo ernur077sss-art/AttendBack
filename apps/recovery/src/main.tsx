@@ -17,9 +17,14 @@ import {
 import { connection, readDeposit, prepareRefund } from './recovery';
 import { displayAmount } from '../../../packages/domain/src';
 import './style.css';
+const isLocalHost = ['localhost', '127.0.0.1', '[::1]'].includes(
+  window.location.hostname,
+);
 function App() {
-  const [cluster, setCluster] = useState('localnet'),
-    [url, setUrl] = useState('http://127.0.0.1:8899'),
+  const [cluster, setCluster] = useState(isLocalHost ? 'localnet' : 'devnet'),
+    [url, setUrl] = useState(
+      isLocalHost ? 'http://127.0.0.1:8899' : 'https://api.devnet.solana.com',
+    ),
     [deposit, setDeposit] = useState(''),
     [message, setMessage] = useState(''),
     [busy, setBusy] = useState(false),
@@ -39,7 +44,7 @@ function App() {
     wallets = useWallets(client),
     connected = useConnectedWallet(client);
   useEffect(() => {
-    if (cluster === 'localnet')
+    if (isLocalHost && cluster === 'localnet')
       void import('../../web/lib/local-wallet').then((m) =>
         m.registerLocalWallets(),
       );
@@ -111,7 +116,7 @@ function App() {
               setPrepared(undefined);
             }}
           >
-            <option value="localnet">Localnet</option>
+            {isLocalHost && <option value="localnet">Localnet</option>}
             <option value="devnet">Devnet</option>
           </select>
         </label>

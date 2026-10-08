@@ -29,20 +29,27 @@ async function main() {
     spawn(
       process.execPath,
       [
-        'node_modules/next/dist/bin/next',
+        '../../node_modules/next/dist/bin/next',
         'start',
-        'apps/web',
         '--hostname',
         '127.0.0.1',
         '--port',
         '3001',
       ],
-      { stdio: 'inherit', env: process.env },
+      { stdio: 'inherit', env: process.env, cwd: 'apps/web' },
     ),
-    spawn(process.execPath, ['--import', 'tsx', 'apps/worker/src/index.ts'], {
-      stdio: 'ignore',
-      env: process.env,
-    }),
+    ...(process.env.RECONCILIATION_MODE === 'workflow'
+      ? []
+      : [
+          spawn(
+            process.execPath,
+            ['--import', 'tsx', 'apps/worker/src/index.ts'],
+            {
+              stdio: 'ignore',
+              env: process.env,
+            },
+          ),
+        ]),
   ];
   let stopping = false;
   function stop() {

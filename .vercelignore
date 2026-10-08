@@ -6,6 +6,10 @@
 node_modules
 **/node_modules
 **/.next
+.swc
+**/.swc
+**/.workflow-data
+apps/web/app/.well-known/workflow
 **/dist
 target
 .anchor

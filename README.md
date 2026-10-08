@@ -11,6 +11,8 @@
 
 **Current release:** working localnet MVP with test tokens. Public devnet deployment, a hosted demo, and the final submission video are still pending.
 
+The [recovery client](https://attendback-recovery.vercel.app) is live. Full hosting on Vercel Hobby + Neon Free is in progress; see [deployment status and setup](docs/free-hosting.ru.md).
+
 ---
 
 ![AttendBack event page with registration and deposit terms](assets/attendback-event.png)

@@ -7,6 +7,10 @@ apps/web/.next
 packages/chain-client/src/generated
 hackathon-product-plan
 apps/web/next-env.d.ts
+apps/signer/next-env.d.ts
+apps/signer/.next
+apps/web/app/.well-known/workflow
+.swc
 apps/recovery/dist
 test-results
 playwright-report

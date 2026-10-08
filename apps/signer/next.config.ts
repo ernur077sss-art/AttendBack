@@ -1,9 +1,8 @@
 import type { NextConfig } from 'next';
 import path from 'node:path';
-import { withWorkflow } from 'workflow/next';
 const config: NextConfig = {
   outputFileTracingRoot: path.resolve(__dirname, '../..'),
   turbopack: { root: path.resolve(__dirname, '../..') },
   devIndicators: false,
 };
-export default withWorkflow(config);
+export default config;

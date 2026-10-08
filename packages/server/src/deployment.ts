@@ -92,10 +92,15 @@ export function validateVercelEnvironment(env: Environment = process.env) {
   for (const key of Object.keys(env)) {
     if (
       env[key] &&
-      /^SIGNER_.*_KEY_FILE$|^SERVICE_SIGNER_TOKEN_FILE$/.test(key)
+      /^SIGNER_.*_KEY_(FILE|BASE64)$|^SERVICE_SIGNER_TOKEN_FILE$/.test(key)
     )
       errors.push(`${key} belongs only on the isolated signer host`);
   }
+  if (
+    env.RECONCILIATION_MODE === 'workflow' &&
+    (!env.CRON_SECRET || env.CRON_SECRET.length < 32)
+  )
+    errors.push('CRON_SECRET (at least 32 characters)');
   if (errors.length)
     throw new Error(`Invalid Vercel configuration: ${errors.join(', ')}`);
 }

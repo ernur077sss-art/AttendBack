@@ -67,6 +67,8 @@ async function login(page: Page, role: string) {
 test('guest deposits, staff scans once, finalized refund preserves ticket', async ({
   browser,
 }) => {
+  // Durable cloud wakes batch chain checks every 15 seconds instead of running a continuous worker.
+  if (process.env.RECONCILIATION_MODE === 'workflow') test.setTimeout(130000);
   const guestContext = await browser.newContext({
       recordVideo: {
         dir: '.local/demo-video',
@@ -137,7 +139,9 @@ test('guest deposits, staff scans once, finalized refund preserves ticket', asyn
         );
         return (await response.json()).deposit_state;
       },
-      { timeout: 50000 },
+      {
+        timeout: process.env.RECONCILIATION_MODE === 'workflow' ? 95000 : 50000,
+      },
     )
     .toBe('Settled');
   await guest.goto(ticketUrl);

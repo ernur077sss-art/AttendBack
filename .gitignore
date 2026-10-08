@@ -7,6 +7,9 @@ dist/
 target/
 .anchor/
 .vercel/
+apps/web/app/.well-known/workflow/
+.workflow-data/
+.swc/
 .env
 .env.*
 !.env.example

@@ -31,6 +31,7 @@
     "node_modules",
     ".local",
     "apps/web/.next",
+    "apps/signer/.next",
     "packages/chain-client/src/generated"
   ]
 }

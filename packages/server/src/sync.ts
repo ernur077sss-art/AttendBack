@@ -177,10 +177,11 @@ export async function syncDeposit(id: string) {
   });
   return { synced: true, state, slot: snapshot.slot.toString() };
 }
-export async function reconcileIntents() {
+export async function reconcileIntents(limit = 100) {
   const intents = (
     await pool.query(
-      "select * from transaction_intents where status in ('prepared','submitted') order by created_at limit 100",
+      "select * from transaction_intents where status in ('prepared','submitted') order by (status='submitted') desc,created_at limit $1",
+      [limit],
     )
   ).rows;
   for (const item of intents) {
@@ -236,10 +237,11 @@ export async function reconcileIntents() {
     }
   }
 }
-export async function expireReservations() {
+export async function expireReservations(limit = 50) {
   const candidates = (
     await pool.query(
-      "select id from registrations where seat_state in ('Reserved','Offered','PaymentPending') and reserved_until<now() order by updated_at,id limit 50",
+      "select id from registrations where seat_state in ('Reserved','Offered','PaymentPending') and reserved_until<now() order by updated_at,id limit $1",
+      [limit],
     )
   ).rows;
   for (const item of candidates) {
@@ -299,13 +301,15 @@ export async function expireReservations() {
     }
   }
 }
-export async function scheduleDue() {
-  const now = await chain.chainTime();
+export async function scheduleDue(limit = 100) {
   const records = (
     await pool.query(
-      "select r.id from registrations r where r.deposit_address is not null and (r.deposit_state is not null or r.seat_state='PaymentPending') and (r.deposit_state is null or r.deposit_state<>'Settled' or not exists(select 1 from ledger l where l.registration_id=r.id)) order by r.updated_at,r.id limit 100",
+      "select r.id from registrations r where r.deposit_address is not null and (r.deposit_state is not null or r.seat_state='PaymentPending') and (r.deposit_state is null or r.deposit_state<>'Settled' or not exists(select 1 from ledger l where l.registration_id=r.id)) order by r.updated_at,r.id limit $1",
+      [limit],
     )
   ).rows;
+  if (!records.length) return;
+  const now = await chain.chainTime();
   for (const item of records) {
     try {
       await syncDeposit(item.id);

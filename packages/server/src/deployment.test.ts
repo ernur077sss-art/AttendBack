@@ -94,6 +94,27 @@ describe('Vercel deployment boundaries', () => {
       }),
     ).toThrow('NEXT_PUBLIC_RECOVERY_URL');
   });
+  it('keeps inline signing keys off the web host and protects the workflow scheduler', () => {
+    expect(() =>
+      validateVercelEnvironment({
+        ...configured(),
+        SIGNER_PAYER_KEY_BASE64: 'test-key-material',
+      }),
+    ).toThrow('isolated signer');
+    expect(() =>
+      validateVercelEnvironment({
+        ...configured(),
+        RECONCILIATION_MODE: 'workflow',
+      }),
+    ).toThrow('CRON_SECRET');
+    expect(() =>
+      validateVercelEnvironment({
+        ...configured(),
+        RECONCILIATION_MODE: 'workflow',
+        CRON_SECRET: 'only-a-test-cron-secret-with-no-real-access',
+      }),
+    ).not.toThrow();
+  });
   it('uses only the exact preview URL even when production APP_ORIGIN is set', () => {
     const env = {
       ...configured(),

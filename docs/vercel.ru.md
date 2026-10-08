@@ -1,19 +1,19 @@
 # AttendBack — подготовка к Vercel
 
-Этап 9 [утверждённого плана](../hackathon-product-plan/development-plan.ru.md). Репозиторий подготовлен для импорта в Vercel. Эта инструкция не означает, что web, база, signer или программа Solana уже опубликованы.
+Этап 9 [утверждённого плана](../hackathon-product-plan/development-plan.ru.md). Для бесплатного devnet-прототипа выбран Vercel Hobby + Neon Free. Текущие результаты публикации и ограничения — в [описании бесплатного размещения](free-hosting.ru.md).
 
 ## Что размещается
 
-| Часть               | Размещение                                                     | Настройка                                        |
-| ------------------- | -------------------------------------------------------------- | ------------------------------------------------ |
-| Web и API           | Vercel, проект Next.js                                         | Root Directory: `apps/web`                       |
-| Независимый возврат | Отдельный Vercel-проект Vite или другой статический HTTPS-хост | Root Directory: `apps/recovery`                  |
-| PostgreSQL          | Внешний PostgreSQL с TLS и пулером соединений                  | `DATABASE_URL` для web и worker                  |
-| Worker расчётов     | Постоянно работающий Node.js-процесс                           | `pnpm worker`, та же БД и devnet                 |
-| Signer              | Изолированный Node.js-сервис за HTTPS                          | [Настройка сервиса подписи](signer.ru.md)        |
-| Программа Anchor    | Solana devnet                                                  | [Отдельный порядок релиза](devnet-release.ru.md) |
+| Часть               | Размещение                                                        | Настройка                                        |
+| ------------------- | ----------------------------------------------------------------- | ------------------------------------------------ |
+| Web и API           | Vercel, проект Next.js                                            | Root Directory: `apps/web`                       |
+| Независимый возврат | Отдельный Vercel-проект Vite или другой статический HTTPS-хост    | Root Directory: `apps/recovery`                  |
+| PostgreSQL          | Внешний PostgreSQL с TLS и пулером соединений                     | `DATABASE_URL` для web и worker                  |
+| Worker расчётов     | Vercel Workflow с сохранённым состоянием и пробуждением по срокам | `RECONCILIATION_MODE=workflow`                   |
+| Signer              | Отдельный Vercel-проект Next.js                                   | Root Directory: `apps/signer`                    |
+| Программа Anchor    | Solana devnet                                                     | [Отдельный порядок релиза](devnet-release.ru.md) |
 
-Текущий worker содержит постоянный цикл. Его не запускают из API route, `postinstall`, команды сборки или Vercel Cron: это потребовало бы отдельной переработки и проверки расчётов. Приватные ключи сервисных ролей остаются на signer-хосте; web получает только адреса и токен вызова signer. Recovery не зависит от API AttendBack, но два Vercel-проекта всё ещё зависят от одного хостинг-провайдера.
+Workflow вызывает ограниченные пакеты существующего worker и засыпает между ними. Успешные изменения API пробуждают обработчик; защищённый Cron раз в день служит резервным запуском. Постоянный `pnpm worker` остаётся для локальной разработки и выделенного сервера. Приватные ключи сервисных ролей находятся только в проекте signer; web получает адреса и токен обращения к нему. Recovery не зависит от API AttendBack, но все Vercel-проекты зависят от одного хостинг-провайдера.
 
 ## 1. Сначала опубликовать recovery
 
@@ -72,14 +72,16 @@ DATABASE_URL="$DATABASE_MIGRATION_URL" pnpm db:migrate
 | `SOLANA_CLUSTER`               | Только `devnet`                                                            |
 | `SOLANA_RPC_URL`               | HTTPS RPC Solana devnet; ключ провайдера, если есть, хранить как секрет    |
 | `SOLANA_EXPECTED_GENESIS_HASH` | `EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG`                             |
-| `SERVICE_SIGNER_URL`           | HTTPS endpoint `/sign` отдельного сервиса                                  |
+| `SERVICE_SIGNER_URL`           | `https://attendback-signer.vercel.app/api/sign` для Vercel signer          |
 | `SERVICE_SIGNER_TOKEN`         | Токен не короче 32 символов, совпадающий с токеном signer; секрет          |
 | `SIGNER_BOOKING_ADDRESS`       | Публичный адрес booking authority                                          |
 | `SIGNER_ATTESTER_ADDRESS`      | Другой публичный адрес attester                                            |
 | `SIGNER_PAYER_ADDRESS`         | Третий публичный адрес плательщика сервисных транзакций                    |
 | `NEXT_PUBLIC_RECOVERY_URL`     | Публичный HTTPS-адрес recovery; включается в браузерную сборку             |
+| `RECONCILIATION_MODE`          | `workflow`, включает обработку очереди без отдельного сервера              |
+| `CRON_SECRET`                  | Отдельный случайный секрет не короче 32 символов для резервного запуска    |
 
-Не добавлять сюда файлы ключей или `SIGNER_*_KEY_FILE`. Адрес плательщика deploy и upgrade authority нужны для отдельного выпуска программы, но не для web-сборки. После изменения `NEXT_PUBLIC_RECOVERY_URL` пересобрать web.
+Не добавлять сюда файлы ключей, `SIGNER_*_KEY_FILE` или `SIGNER_*_KEY_BASE64`. Адрес плательщика deploy и upgrade authority нужны для отдельного выпуска программы, но не для web-сборки. После изменения `NEXT_PUBLIC_RECOVERY_URL` пересобрать web.
 
 Production принимает запросы только с `APP_ORIGIN`. Для Preview код использует точный `https://${VERCEL_URL}`, предоставленный Vercel, и не доверяет произвольному HTTP Host. Открывать Preview по URL конкретного deployment; branch alias с другим origin не считается этим адресом. Системные переменные Vercel должны быть доступны. Проверки доступа и Secure-cookie сохраняются; Deployment Protection отключать не требуется.
 
@@ -98,7 +100,7 @@ pnpm build:vercel
 1. `/api/health` возвращает HTTP 200, `database: true`, `cluster: devnet`.
 2. `/api/config` показывает правильные program ID, mint и адреса ролей; меню не предлагает localnet-роли.
 3. Подпись входа содержит правильный домен, а cookie имеет `Secure` и `HttpOnly`.
-4. Кошелёк проходит создание события → депозит → QR → check-in → finalized-возврат; worker работает на отдельном хосте.
+4. Кошелёк проходит создание события → депозит → QR → check-in → finalized-возврат; Workflow работает без локального worker.
 5. Камера физического телефона работает по HTTPS; неявка, спор и независимый recovery проходят сценарии [демо](demo.ru.md).
 
 Файл доказательства загружается отдельным запросом: текущий предел 2 MiB даёт менее 2,8 MB JSON с base64, ниже лимита Vercel Functions 4,5 MB. Не увеличивать этот лимит без изменения способа загрузки. Доказательства сохраняются в PostgreSQL, а не в эфемерной файловой системе функции.
@@ -107,7 +109,7 @@ pnpm build:vercel
 
 Локально проверены TypeScript, 42 модульных/программных/signer/конфигурационных теста, 16 PostgreSQL/RPC-тестов и браузерный сценарий «залог → QR → finalized-возврат» (1/1). Обычная web-сборка, `build:vercel` с синтетическими значениями без внешних запросов и recovery build прошли. Проверены установка по frozen lockfile, runtime-файлы API, формат конфигураций и относительные ссылки. Незаполненная конфигурация ожидаемо отклоняется. Эти результаты относятся к подготовке исходников, а не к облачному запуску.
 
-Конфигурации, workspace, проверка переменных, Preview origin и подключение пула подготовлены в коде. Фактическое размещение, provisioning БД, выпуск программы, служебные ключи, адреса и проверка телефона остаются результатами этапа 9. Первый облачный deployment и его журналы нужно проверить отдельно; локальная production-сборка не является подтверждением успешного deployment на Vercel.
+Эти проверки выполнялись до переноса worker в Workflow. Результаты новой схемы и облачного размещения указаны в [free-hosting.ru.md](free-hosting.ru.md); локальная production-сборка не является подтверждением успешного deployment на Vercel.
 
 ## Официальные источники
 

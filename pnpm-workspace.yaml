@@ -1,8 +1,11 @@
 packages:
   - apps/web
   - apps/recovery
+  - apps/signer
 storeDir: .local/pnpm-store
 allowBuilds:
+  '@swc/core': true
+  cbor-extract: true
   '@embedded-postgres/darwin-arm64': true
   '@embedded-postgres/linux-x64': true
   '@embedded-postgres/linux-arm64': true

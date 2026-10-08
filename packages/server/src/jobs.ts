@@ -198,15 +198,19 @@ export async function processJob(
     else await retry(job, code);
   }
 }
-export async function tick(workerId: string = randomUUID(), maxJobs = 10) {
+export async function tick(
+  workerId: string = randomUUID(),
+  maxJobs = 10,
+  maxRecords = 100,
+) {
   await pool.query('delete from evidence where expires_at<=now()');
   await pool.query('delete from auth_sessions where expires_at<=now()');
   await pool.query(
     "delete from auth_challenges where expires_at<now()-interval '1 day'",
   );
-  await reconcileIntents();
-  await expireReservations();
-  await scheduleDue();
+  await reconcileIntents(maxRecords);
+  await expireReservations(Math.min(50, maxRecords));
+  await scheduleDue(maxRecords);
   for (let i = 0; i < maxJobs; i++) {
     const job = await claimJob(workerId);
     if (!job) break;

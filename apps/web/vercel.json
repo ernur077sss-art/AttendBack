@@ -3,5 +3,9 @@
   "framework": "nextjs",
   "installCommand": "pnpm --dir ../.. install --frozen-lockfile",
   "buildCommand": "pnpm --dir ../.. build:vercel",
-  "fluid": true
+  "fluid": true,
+  "crons": [{ "path": "/api/cron/reconcile", "schedule": "0 3 * * *" }],
+  "functions": {
+    "app/.well-known/workflow/**/route.js": { "maxDuration": 300 }
+  }
 }

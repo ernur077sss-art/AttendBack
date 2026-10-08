@@ -7,11 +7,12 @@
     "node": ">=24 <25"
   },
   "scripts": {
-    "dev": "NEXT_TELEMETRY_DISABLED=1 next dev apps/web --webpack --hostname 127.0.0.1",
-    "build": "NEXT_TELEMETRY_DISABLED=1 next build apps/web --webpack",
+    "dev": "NEXT_TELEMETRY_DISABLED=1 pnpm --dir apps/web dev --hostname 127.0.0.1",
+    "build": "NEXT_TELEMETRY_DISABLED=1 pnpm --dir apps/web build",
     "build:vercel": "pnpm vercel:check && pnpm build",
+    "build:signer": "NEXT_TELEMETRY_DISABLED=1 next build apps/signer --webpack",
     "vercel:check": "node --import tsx scripts/check-vercel.ts",
-    "start": "next start apps/web --hostname 127.0.0.1",
+    "start": "pnpm --dir apps/web start --hostname 127.0.0.1",
     "worker": "node --import tsx apps/worker/src/index.ts",
     "signer": "node --import tsx apps/signer/src/index.ts",
     "test:signer": "vitest run apps/signer",
@@ -58,6 +59,7 @@
     "react-dom": "19.3.0",
     "tailwind-merge": "3.7.0",
     "tailwindcss": "4.3.3",
+    "workflow": "5.1.0",
     "zod": "4.6.5"
   },
   "devDependencies": {

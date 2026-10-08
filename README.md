@@ -1,81 +1,243 @@
-# AttendBack
+# AttendBack — Show up. Get your deposit back.
 
-Возвратный залог за посещение мероприятий. Самостоятельная регистрация, очередь, check-in, споры и расчёты в Solana. Локальная разработка и devnet; реальные средства не поддержаны этим релизом.
+[![CI](https://github.com/ernur077sss-art/AttendBack/actions/workflows/check.yml/badge.svg?branch=main)](https://github.com/ernur077sss-art/AttendBack/actions/workflows/check.yml)
+[![Solana](https://img.shields.io/badge/Solana-localnet-9945FF)](docs/architecture.ru.md)
+[![Status](https://img.shields.io/badge/Status-local_MVP-14F195)](docs/progress.ru.md)
+[![Colosseum](https://img.shields.io/badge/Colosseum-Kazakhstan_track-14F195)](https://superteam.fun/earn/listing/colosseum-crypto-worlds-fair-hackathon-superteam-kazakhstan-track)
 
-## План и статус
+> Refundable attendance deposits for events on Solana. Guests reserve a seat, check in with a QR ticket, and receive their deposit back under rules published before payment.
 
-- [Утверждённые этапы](hackathon-product-plan/development-plan.ru.md)
-- [Проверенный прогресс](docs/progress.ru.md)
-- [Сверка с планом и исправленные ошибки](docs/plan-audit.ru.md)
-- [Продуктовая спецификация](hackathon-product-plan/product-plan.ru.md)
-- [Сценарий демонстрации](docs/demo.ru.md)
-- [Пакет devnet-релиза и оставшиеся настройки](docs/devnet-release.ru.md)
-- [Сервис подписи devnet](docs/signer.ru.md)
+[Русский](README.ru.md) · [Demo walkthrough](docs/demo.ru.md) · [Architecture](docs/architecture.ru.md) · [Development plan](hackathon-product-plan/development-plan.ru.md) · [Release status](docs/progress.ru.md)
 
-## Окружение
+**Current release:** working localnet MVP with test tokens. Public devnet deployment, a hosted demo, and the final submission video are still pending.
 
-Node 24.19.0, pnpm 11.25.0, Rust 1.99.0, Anchor 1.2.1, Agave 4.3.0, Surfpool 1.6.0, PostgreSQL 18.4. Зависимости закреплены в lock-файлах. На машине Codex `scripts/pnpmw` находит bundled Node; на обычной машине установите Node и pnpm этих версий.
+---
+
+![AttendBack event page with registration and deposit terms](assets/attendback-event.png)
+
+_Actual local demo: event registration, deposit amount, cancellation terms, dispute deadlines, and the protective refund deadline. The event is synthetic; it does not represent a partnership._
+
+---
+
+## Hackathon project
+
+Prepared for [Colosseum Crypto Worlds Fair — Superteam Kazakhstan track](https://superteam.fun/earn/listing/colosseum-crypto-worlds-fair-hackathon-superteam-kazakhstan-track). The hackathon application has not been submitted yet.
+
+| Account         | Role          | Contact                                      |
+| --------------- | ------------- | -------------------------------------------- |
+| ernur077sss-art | Project owner | [GitHub](https://github.com/ernur077sss-art) |
+
+AttendBack serves organizers of conferences, community meetups, workshops, and innovation hub events. It includes its own registration flow and does not require a particular ticketing platform.
+
+---
+
+## Problem and Solution
+
+### 1. Reserved seats can stay empty
+
+- **Problem:** A free registration does not necessarily become an attended event.
+- **AttendBack:** A refundable deposit gives guests a commitment to keep. A FIFO waitlist offers released seats to the next guest without charging them automatically.
+
+### 2. Refund terms can be unclear
+
+- **Problem:** Guests may not know who holds their deposit or when they can recover it.
+- **AttendBack:** The published policy fixes the amount, token, recipient, deadlines, and withholding share. Deposits are held in program-controlled SPL vaults, with finalized transaction receipts.
+
+### 3. Attendance and disputes require accountability
+
+- **Problem:** A missed or incorrect check-in can turn into a payment dispute.
+- **AttendBack:** Staff scan QR tickets, corrections have an audit trail, and a guest can open a dispute within the policy window. A designated resolver decides the outcome under the published rules.
+
+### 4. The application can go offline
+
+- **Problem:** An unavailable backend should not be the only way to access an eligible refund.
+- **AttendBack:** An independent recovery client reads Solana directly and prepares a full refund when the deposit is refundable, the event is cancelled, or the protective deadline has passed.
+
+Reducing no-shows is a product hypothesis, not a measured result. A pilot should measure attendance, deposit conversion, waitlist fill rate, and dispute frequency.
+
+---
+
+## Why Solana
+
+- **Enforceable settlement:** an Anchor program validates the policy, authorities, deadlines, and payment destinations.
+- **SPL token deposits:** each commitment has a separate vault; a split settlement transfers the refund and withheld amount atomically.
+- **Verifiable receipts:** the ledger records finalized on-chain payments rather than treating a queued job as a completed refund.
+- **Independent recovery:** the guest can use a separate client and RPC without the AttendBack API, database, or worker.
+
+The chain enforces payment rules. Staff still attest physical attendance, the resolver decides disputes, and the upgrade authority controls program updates. See the [protocol and trust boundaries](docs/protocol.ru.md).
+
+---
+
+## Summary of Features
+
+- Organizer workspace with events, sessions, staff roles, and published deposit policies.
+- Wallet sign-in, seat reservations, FIFO waitlist, and QR tickets.
+- Attendance refunds, early cancellation, late cancellation, and no-show handling.
+- Private dispute evidence, a resolver workspace, and fixed dispute windows.
+- Check-in history with authors, timestamps, and correction revisions.
+- Settlement worker with retries, transaction reconciliation, and in-app notifications.
+- A separate recovery application and an isolated signer service for the planned devnet release.
+
+---
+
+## Tech Stack
+
+| Layer                | Technology                                                     |
+| -------------------- | -------------------------------------------------------------- |
+| On-chain program     | Rust 1.99.0 · Anchor 1.2.1 · Agave 4.3.0 · SPL Token           |
+| Client and wallet    | TypeScript 7.0.2 · Solana Kit 8.4.0 · Codama · Wallet Standard |
+| Frontend and API     | Next.js 16.4.0 · React 19.3.0 · Tailwind CSS 4.3.3             |
+| Data and jobs        | PostgreSQL 18.4 · Node.js 24.19.0 · transactional outbox       |
+| Recovery and signing | Vite 8.3.3 · separate Node.js signer                           |
+| Testing and tooling  | LiteSVM · Surfpool 1.6.0 · Vitest · Playwright · pnpm 11.25.0  |
+
+---
+
+## Architecture
+
+```mermaid
+flowchart LR
+  Wallet[Guest wallet] --> Web[Next.js web and API]
+  Web --> DB[(PostgreSQL)]
+  DB --> Worker[Settlement worker]
+  Web --> Signer[Isolated service signer]
+  Worker --> Signer
+  Web --> RPC[Solana RPC]
+  Worker --> RPC
+  Signer --> RPC
+  RPC --> Program[Anchor program]
+  Program --> Vault[SPL deposit vault]
+  Vault --> Guest[Guest refund]
+  Vault --> Recipient[Policy withholding recipient]
+  Wallet --> Recovery[Independent recovery client]
+  Recovery --> RPC
+```
+
+The backend assigns seats and access rights; Solana determines the permitted payment outcome. Attendance refunds keep the ticket active, while confirmed cancellation releases the seat. The separate signer is implemented for devnet; localnet uses public test roles.
+
+Full component breakdown: [architecture](docs/architecture.ru.md) · [signer service](docs/signer.ru.md).
+
+---
+
+## Quick Start
+
+**Prerequisites:** Node.js 24.19.0, pnpm 11.25.0, Rust 1.99.0, Anchor CLI 1.2.1, and Agave/Solana CLI 4.3.0 installed and available on `PATH`.
+
+### 1. Install and build
 
 ```sh
-./scripts/pnpmw install --frozen-lockfile
-# Сначала установите Rust, Anchor и Agave указанных версий.
-# Для уже установленных в этом workspace инструментов:
-source scripts/toolchain.sh
+git clone https://github.com/ernur077sss-art/AttendBack.git
+cd AttendBack
+pnpm install --frozen-lockfile
 NO_DNA=1 anchor build
-./scripts/pnpmw codegen
-./scripts/pnpmw db:start
-# в других терминалах из корня репозитория
-./scripts/pnpmw db:migrate
-./scripts/pnpmw localnet
-./scripts/pnpmw dev
-./scripts/pnpmw worker
-./scripts/pnpmw demo:seed
+pnpm codegen
 ```
 
-Альтернатива локальному PostgreSQL: `docker compose up -d db`. Значения `.env.example` предназначены только для localhost. Next читает свой env из `apps/web/.env.local`; серверные процессы получают параметры из окружения. Секреты не коммитить.
+The local defaults match [.env.example](.env.example); no credentials are needed for the synthetic demo. Custom server values must be exported into each process environment. Next.js reads its local env file from `apps/web/.env.local`.
 
-Для изолированно установленных Rust/Solana CLI: `source scripts/toolchain.sh`. Скрипт не меняет глобальный профиль. `.local` содержит инструменты, данные БД и исключена из Git.
+### 2. Start PostgreSQL
 
-Откройте `http://127.0.0.1:3000`. В меню кошелька доступны явно помеченные локальные роли «Организатор», «Участник», «Сотрудник», «Арбитр». На localhost они используют общедоступные тестовые ключи и токены без стоимости. Обычные кошельки подключаются через Wallet Standard; есть v1 и fallback на v0. Никогда не переводите реальные средства тестовым ролям.
-
-## Независимый возврат
+Run in a dedicated terminal and keep it open:
 
 ```sh
-./scripts/pnpmw recovery:build
-./scripts/pnpmw recovery:start
+pnpm db:start
 ```
 
-Откройте `http://127.0.0.1:4173`, укажите RPC и адрес депозита из билета. Клиент читает finalized аккаунты напрямую из Solana, проверяет владельца/тип/PDA/mint, симулирует и предлагает подписать возврат. API, БД и worker AttendBack не нужны. Нужны доступный RPC, разрешённое состояние/срок и SOL у плательщика комиссии. Каталог `apps/recovery/dist` можно разместить отдельно от основного приложения.
+Alternatively, run `docker compose up -d db`. Choose one database option; both use port `54329`.
 
-## Проверки
+### 3. Migrate and start the local chain
 
-Локальная Solana и PostgreSQL должны работать. Тесты используют отдельные базы с суффиксом `_test`; E2E поднимает собственные web и worker на порту 3001.
+In another terminal, after PostgreSQL is ready:
 
 ```sh
-./scripts/pnpmw exec node --import tsx scripts/test-db.ts
-./scripts/pnpmw check
-./scripts/pnpmw test:db
-./scripts/pnpmw recovery:build
-PLAYWRIGHT_BROWSERS_PATH=.local/playwright ./scripts/pnpmw exec playwright install chromium
-PLAYWRIGHT_BROWSERS_PATH=.local/playwright ./scripts/pnpmw test:e2e
-./scripts/pnpmw db:backup-check
+pnpm db:migrate
+pnpm localnet
 ```
 
-Для `db:backup-check` нужны `pg_dump` и `pg_restore` 18.4: скрипт ищет локальную установку `.local/toolchain/postgres-client/bin`. Он восстанавливает снимок тестовой БД во временную новую БД и сравнивает все строки. Не предназначен для production-бэкапов.
+Keep the chain running. Restarting it resets on-chain state but preserves the database; create a new demo event after a restart.
 
-GitHub workflow строит SBF до программных тестов, проверяет генерацию клиента, поднимает Surfpool, выполняет PostgreSQL и браузерные тесты. Успех CI на GitHub можно подтвердить только после публикации коммитов и фактического запуска workflow.
+### 4. Start the application and worker
 
-## Структура и документы
+Run each command in its own terminal, from the repository root:
 
-- `apps/web`: Next.js, роли, кошелёк, API; `apps/worker`: очередь и сверка сети.
-- `apps/recovery`: независимый статический клиент возврата.
-- `apps/signer`: отдельный процесс проверки и подписи разрешённых devnet-транзакций; служебные секреты монтируются отдельно от web/worker.
-- `programs/attendback`: Anchor; `idl` и `packages/chain-client`: сгенерированный Codama-клиент.
-- `packages/db`: PostgreSQL и миграции; `packages/domain`: правила и денежные типы.
-- [Архитектура](docs/architecture.ru.md), [денежный протокол](docs/protocol.ru.md), [ревью](docs/review.html), [ограничения окружения](docs/runtime-notes.ru.md).
+```sh
+pnpm dev
+```
 
-## Границы текущего релиза
+```sh
+pnpm worker
+```
 
-Это локальный демонстрационный продукт. Devnet-адрес размещённой программы, пользовательский плательщик, upgrade authority, сервисные роли и публичные URL ещё должны быть согласованы и проверены. Mainnet отключён. Внешние email/SMS, карты/тенге, SSO и интеграции с регистрационными площадками не входят в эту версию; уведомления доступны внутри приложения.
+Once the services are ready, create a demo event:
 
-Перезапуск `localnet` сбрасывает цепочку, но не БД. После сброса создайте новое демособытие; старые адреса больше не подтверждают состояние. Для чистой демонстрации можно использовать новую локальную БД через `DATABASE_URL`, применить миграции и запустить `demo:seed`. Не удаляйте рабочую БД для сброса теста.
+```sh
+pnpm demo:seed
+```
+
+Open [localhost:3000](http://127.0.0.1:3000) or the event URL printed by the seed command. The wallet menu provides labeled local roles for organizer, guest, staff, and resolver. These use public test keys and tokens with no monetary value. Never send real funds to them.
+
+For the existing Codex workspace, `./scripts/pnpmw` can replace `pnpm`; `source scripts/toolchain.sh` selects its already installed local Rust/Solana tools. Those ignored tool directories are not included in a fresh clone.
+
+### Independent recovery
+
+```sh
+pnpm recovery:build
+pnpm recovery:start
+```
+
+Open [localhost:4173](http://127.0.0.1:4173), enter the RPC URL and the deposit address from the ticket, then connect the guest wallet. Recovery requires an eligible on-chain state, an available RPC, and a fee payer with SOL. The static build in `apps/recovery/dist` can be hosted separately.
+
+---
+
+## Tests and Verification
+
+The last recorded local audit passed **30 unit/program/signer tests, 16 PostgreSQL/RPC tests, and 7 browser scenarios**, plus both production builds and restoration of all 17 database tables. See the [audit](docs/plan-audit.ru.md) and [progress log](docs/progress.ru.md). The CI badge above reports the actual GitHub workflow state.
+
+With PostgreSQL and localnet running:
+
+```sh
+pnpm exec node --import tsx scripts/test-db.ts
+pnpm check
+pnpm test:db
+pnpm recovery:build
+pnpm exec playwright install --with-deps chromium
+pnpm test:e2e
+```
+
+Tests use a separate `_test` database; browser tests start their own web application on port `3001`. `pnpm db:backup-check` additionally requires `pg_dump` and `pg_restore` 18.4 in `.local/toolchain/postgres-client/bin`. These checks do not replace an independent security audit.
+
+---
+
+## Roadmap
+
+- [x] Stages 1–2: local foundation, data model, and deposit rules.
+- [x] Stages 3–4: Solana deposits, refunds, no-shows, and disputes.
+- [x] Stages 5–6: reservations, roles, settlement worker, and reconciliation.
+- [x] Stage 7: local interfaces, QR check-in, and independent recovery.
+- [ ] Stage 7: verify a physical phone camera over public HTTPS.
+- [x] Stage 8: local automated tests, regression fixes, and database restoration.
+- [x] Stage 9 preparation: release configuration, signer, manifest, and demo script.
+- [ ] Stage 9: deploy to devnet, host the services, and verify a regular wallet.
+- [ ] Publish the final demo video and submit the hackathon application.
+
+Full roadmap: [approved development plan](hackathon-product-plan/development-plan.ru.md). The current release does not support mainnet or real funds. Card/tenge payments, SSO, external registration integrations, and email/SMS are outside this MVP.
+
+---
+
+## Resources
+
+- [Product specification](hackathon-product-plan/product-plan.ru.md)
+- [Demo walkthrough](docs/demo.ru.md)
+- [Architecture](docs/architecture.ru.md) and [payment protocol](docs/protocol.ru.md)
+- [Devnet release checklist](docs/devnet-release.ru.md)
+- [Verified progress](docs/progress.ru.md) and [plan audit](docs/plan-audit.ru.md)
+- [Runtime notes](docs/runtime-notes.ru.md)
+- [GitHub Actions](https://github.com/ernur077sss-art/AttendBack/actions/workflows/check.yml)
+
+Technical documents and the current application UI are primarily in Russian. Public demo, presentation, and video links will be added when those materials are published.
+
+---
+
+## License
+
+No `LICENSE` file is included in this repository yet.

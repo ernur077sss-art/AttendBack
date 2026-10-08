@@ -15,6 +15,7 @@ import {
   addMember,
   ticket,
   checkin,
+  enqueue,
 } from '../../packages/server/src/service';
 import {
   publicConfig,
@@ -24,12 +25,8 @@ import {
   syncPublication,
 } from '../../packages/server/src/chain-service';
 import * as chain from '../../packages/server/src/chain';
-import { claimJob, processJob } from '../../packages/server/src/jobs';
-import {
-  syncDeposit,
-  reconcileIntents,
-  expireReservations,
-} from '../../packages/server/src/sync';
+import { claimJob, processJob, tick } from '../../packages/server/src/jobs';
+import { syncDeposit, reconcileIntents } from '../../packages/server/src/sync';
 beforeAll(async () => {
   expect(
     (
@@ -185,7 +182,7 @@ test('stage 6: crash after persistence resends identical bytes, pays once, keeps
     'Waitlisted',
   );
 }, 60000);
-test('stage 6: unavailable chain data cannot release PaymentPending capacity', async () => {
+test('stage 6: unavailable chain data keeps PaymentPending capacity without stopping unrelated worker jobs', async () => {
   const f = await fixture();
   const before = (
     await pool.query('select * from registrations where id=$1', [f.r.id])
@@ -194,11 +191,21 @@ test('stage 6: unavailable chain data cannot release PaymentPending capacity', a
     "update registrations set seat_state='PaymentPending',reserved_until=now()-interval '1 day',permit_expires=1,permit_last_valid_block_height=1 where id=$1",
     [f.r.id],
   );
+  const operation = `test-notice:${randomUUID()}`;
+  await enqueue(pool, 'notify', f.r.id, operation, {
+    wallet: f.guest.address,
+    message: operation,
+  });
+  const originalSnapshot = chain.depositSnapshot;
   const unavailable = vi
     .spyOn(chain, 'depositSnapshot')
-    .mockRejectedValueOnce(new Error('RPC unavailable'));
+    .mockImplementation((event, policy, commitment, minSlot) => {
+      if (commitment === before.deposit_address)
+        throw new Error('RPC unavailable');
+      return originalSnapshot(event, policy, commitment, minSlot);
+    });
   try {
-    await expect(expireReservations()).rejects.toThrow('RPC unavailable');
+    await tick(randomUUID(), 50);
     expect(
       (
         await pool.query('select seat_state from registrations where id=$1', [
@@ -206,6 +213,20 @@ test('stage 6: unavailable chain data cannot release PaymentPending capacity', a
         ])
       ).rows[0].seat_state,
     ).toBe('PaymentPending');
+    expect(
+      (
+        await pool.query('select message from notifications where message=$1', [
+          operation,
+        ])
+      ).rows,
+    ).toEqual([{ message: operation }]);
+    expect(
+      (
+        await pool.query('select sync_error from registrations where id=$1', [
+          f.r.id,
+        ])
+      ).rows[0].sync_error,
+    ).toBe('RPC_RECHECK');
   } finally {
     unavailable.mockRestore();
     await pool.query(

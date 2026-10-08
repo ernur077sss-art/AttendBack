@@ -231,6 +231,15 @@ export async function handle(req: Request) {
     if (
       method === 'GET' &&
       parts[0] === 'events' &&
+      parts[2] === 'checkins' &&
+      parts.length === 3
+    )
+      return json(
+        await service.eventCheckinHistory(wallet, uuid.parse(parts[1])),
+      );
+    if (
+      method === 'GET' &&
+      parts[0] === 'events' &&
       parts[2] === 'registrations'
     )
       return json(

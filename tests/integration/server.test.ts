@@ -26,6 +26,7 @@ import {
   eventRegistrations,
   eventDetail,
   addSession,
+  eventCheckinHistory,
 } from '../../packages/server/src/service';
 import { chainTime } from '../../packages/server/src/chain';
 import { handle } from '../../packages/server/src/http';
@@ -201,6 +202,7 @@ test('QR needs active finalized projection; wrong event and foreign staff fail; 
     ),
   ).toBe(1);
   await correctCheckin(staff.wallet, r.id);
+  await correctCheckin(staff.wallet, r.id);
   const rescanned = await checkin(staff.wallet, event.id, t.token);
   expect(rescanned.duplicate).toBe(false);
   expect(
@@ -211,6 +213,18 @@ test('QR needs active finalized projection; wrong event and foreign staff fail; 
       )
     ).rows[0],
   ).toEqual({ corrected: false, revision: 3 });
+  const history = await eventCheckinHistory(owner.wallet, event.id);
+  expect(history.map((row) => [row.action, row.revision, row.actor])).toEqual([
+    ['checkin.confirmed', '3', staff.wallet],
+    ['checkin.corrected', '2', staff.wallet],
+    ['checkin.confirmed', '1', staff.wallet],
+  ]);
+  await expect(
+    eventCheckinHistory(stranger.wallet, event.id),
+  ).rejects.toThrow();
+  await expect(
+    eventCheckinHistory(resolver.wallet, event.id),
+  ).rejects.toThrow();
   await pool.query('update checkins set frozen=true where registration_id=$1', [
     r.id,
   ]);

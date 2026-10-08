@@ -1,7 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { seedDemo } from '../../scripts/demo';
-import { pool } from '../../packages/db/src';
-test.afterAll(() => pool.end());
 test('booking follows Solana time despite device clock drift and disables on clock failure', async ({
   page,
 }) => {

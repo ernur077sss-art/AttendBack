@@ -331,6 +331,10 @@ export async function checkin(actor: string, eventId: string, token: string) {
       [id, actor],
     );
     const revision = inserted.rows[0].revision;
+    await db.query(
+      'insert into audit_log(org_id,actor,action,subject,details) values($1,$2,$3,$4,$5)',
+      [r.org_id, actor, 'checkin.confirmed', id, JSON.stringify({ revision })],
+    );
     await enqueue(db, 'attest', id, `attest:${id}:${revision}`, { revision });
     return {
       registrationId: id,
@@ -349,14 +353,38 @@ export async function correctCheckin(actor: string, id: string) {
         [id],
       )
     ).rows[0];
+    if (c?.corrected) return { corrected: true };
     if (!c || c.frozen || new Date(c.eligible_at).getTime() <= Date.now())
       throw new DomainError('FINAL_CHECKIN', 'Исправление уже недоступно');
     await db.query(
       'update checkins set corrected=true,revision=revision+1 where registration_id=$1',
       [id],
     );
+    await db.query(
+      'insert into audit_log(org_id,actor,action,subject,details) values($1,$2,$3,$4,$5)',
+      [
+        r.org_id,
+        actor,
+        'checkin.corrected',
+        id,
+        JSON.stringify({ revision: c.revision + 1 }),
+      ],
+    );
     return { corrected: true };
   });
+}
+export async function eventCheckinHistory(actor: string, eventId: string) {
+  const event = (
+    await pool.query('select org_id from events where id=$1', [eventId])
+  ).rows[0];
+  if (!event) throw new DomainError('NOT_FOUND', 'Событие не найдено', 404);
+  await requireRole(event.org_id, actor, ['owner', 'manager', 'staff']);
+  return (
+    await pool.query(
+      "select a.id,a.actor,a.action,a.details->>'revision' as revision,a.created_at,r.wallet,s.title from audit_log a join registrations r on r.id::text=a.subject join sessions s on s.id=r.session_id where a.org_id=$1 and s.event_id=$2 and a.action in ('checkin.confirmed','checkin.corrected') order by a.id desc limit 500",
+      [event.org_id, eventId],
+    )
+  ).rows;
 }
 export async function saveDispute(
   wallet: string,

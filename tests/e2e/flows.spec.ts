@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './fixtures';
 import { mkdir, writeFile } from 'node:fs/promises';
 import QRCode from 'qrcode';
 import { seedDemo, sendLocal } from '../../scripts/demo';
@@ -11,7 +11,6 @@ test.beforeAll(async () => {
   eventTitle = `Browser meetup ${Date.now()} (демо)`;
   eventId = (await seedDemo(eventTitle)).id;
 });
-test.afterAll(() => pool.end());
 test('organizer creates a draft and publishes immutable policy from the UI', async ({
   browser,
 }) => {
@@ -24,20 +23,16 @@ test('organizer creates a draft and publishes immutable policy from the UI', asy
     page = await context.newPage();
   await login(page, 'Организатор');
   await page.goto('/organizer');
-  const orgForm = page
-    .locator('form')
-    .filter({
-      has: page.getByRole('heading', { name: 'Организация', exact: true }),
-    });
+  const orgForm = page.locator('form').filter({
+    has: page.getByRole('heading', { name: 'Организация', exact: true }),
+  });
   await orgForm
     .getByLabel('Название', { exact: true })
     .fill(`Demo Team ${Date.now()}`);
   await orgForm.getByRole('button', { name: 'Создать организацию' }).click();
-  const eventForm = page
-    .locator('form')
-    .filter({
-      has: page.getByRole('heading', { name: 'Новое событие', exact: true }),
-    });
+  const eventForm = page.locator('form').filter({
+    has: page.getByRole('heading', { name: 'Новое событие', exact: true }),
+  });
   await expect(eventForm).toBeVisible();
   const title = `Митап сообщества ${Date.now()} (демо)`;
   await eventForm.getByLabel('Название', { exact: true }).fill(title);
@@ -154,6 +149,14 @@ test('guest deposits, staff scans once, finalized refund preserves ticket', asyn
       .filter({ hasText: eventTitle })
       .getByRole('cell', { name: '5 USDC', exact: true }),
   ).toBeVisible();
+  await staff.goto(`/organizer/events/${eventId}`);
+  const history = staff.locator('section').filter({
+    has: staff.getByRole('heading', { name: 'Журнал входа', exact: true }),
+  });
+  await expect(
+    history.getByRole('cell', { name: 'Вход подтверждён · №1', exact: true }),
+  ).toHaveCount(1);
+  await expect(history.getByRole('row')).toHaveCount(2);
   expect(errors).toEqual([]);
   await guestContext.close();
   await guest.video()?.saveAs('.local/demo-video/attendance.webm');

@@ -12,6 +12,30 @@
     "findings": [
       {
         "severity": "high",
+        "category": "reconciliation",
+        "description": "Unpaid permits could starve funded deposits; one expiration RPC failure aborted unrelated worker jobs",
+        "fix": "Rotate bounded batches, exclude released unfunded rows, require confirmed deposits for payouts, isolate per-registration expiration errors"
+      },
+      {
+        "severity": "medium",
+        "category": "receipts",
+        "description": "Batched settlements lost a receipt; remaining accounts could falsely identify a settlement transaction",
+        "fix": "Ledger unique by registration, notification per receipt, verify commitment account position and store the transaction slot; real RPC and DB rollback regressions"
+      },
+      {
+        "severity": "medium",
+        "category": "auditability",
+        "description": "Check-in kept only the latest actor and state",
+        "fix": "Transactional author/revision history for new confirmations and corrections, scoped organizer/staff UI"
+      },
+      {
+        "severity": "medium",
+        "category": "testing",
+        "description": "Per-file teardown closed a database pool reused by the full Playwright suite",
+        "fix": "Shared worker-scoped database lifetime; verify all seven browser cases together"
+      },
+      {
+        "severity": "high",
         "category": "correctness",
         "description": "Finalized projection could be lost after transient RPC error",
         "fix": "Mark intent finalized only after projection; regression test added"

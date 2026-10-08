@@ -13,7 +13,21 @@ import {
 } from '../../../../components/common';
 import { SessionForm } from '../../../../components/session-form';
 import { Button } from '../../../../components/ui/button';
-import { short, type Event, type Registration } from '../../../../lib/api';
+import {
+  short,
+  date,
+  type Event,
+  type Registration,
+} from '../../../../lib/api';
+type CheckinEntry = {
+  id: string;
+  actor: string;
+  action: string;
+  revision: string;
+  created_at: string;
+  wallet: string;
+  title: string;
+};
 export default function OrganizerEvent() {
   return (
     <AuthGate>
@@ -29,6 +43,11 @@ function Content() {
     [add, setAdd] = useState(false);
   const role = app.me?.organizations.find((o) => o.id === r.data?.org_id)?.role,
     edit = role === 'owner' || role === 'manager';
+  const history = useResource<CheckinEntry[]>(
+    role && ['owner', 'manager', 'staff'].includes(role)
+      ? `events/${id}/checkins`
+      : null,
+  );
   const tx = async (path: string) => {
     try {
       await app.transact(path, {});
@@ -130,6 +149,55 @@ function Content() {
               </table>
             </div>
           </section>
+          {role && ['owner', 'manager', 'staff'].includes(role) && (
+            <section className="panel mt-8">
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <h2 className="text-xl font-semibold">Журнал входа</h2>
+                <Button variant="outline" onClick={() => void history.reload()}>
+                  Обновить журнал
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Последние 500 отметок и исправлений: кто выполнил действие и
+                когда.
+              </p>
+              <LoadState {...history} retry={history.reload} />
+              {history.data?.length === 0 && <p>Отметок пока нет.</p>}
+              {!!history.data?.length && (
+                <div className="table-scroll">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Время</th>
+                        <th>Сессия / участник</th>
+                        <th>Действие</th>
+                        <th>Сотрудник</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {history.data.map((row) => (
+                        <tr key={row.id}>
+                          <td>{date(row.created_at)}</td>
+                          <td>
+                            {row.title}
+                            <br />
+                            <span title={row.wallet}>{short(row.wallet)}</span>
+                          </td>
+                          <td>
+                            {row.action === 'checkin.corrected'
+                              ? 'Отметка отменена'
+                              : 'Вход подтверждён'}{' '}
+                            · №{row.revision}
+                          </td>
+                          <td title={row.actor}>{short(row.actor)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </section>
+          )}
           {edit && (
             <div className="mt-8 stack">
               <div className="flex flex-wrap gap-3">

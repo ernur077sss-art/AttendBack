@@ -6,6 +6,7 @@
 
 - [Утверждённые этапы](hackathon-product-plan/development-plan.ru.md)
 - [Проверенный прогресс](docs/progress.ru.md)
+- [Сверка с планом и исправленные ошибки](docs/plan-audit.ru.md)
 - [Продуктовая спецификация](hackathon-product-plan/product-plan.ru.md)
 - [Сценарий демонстрации](docs/demo.ru.md)
 - [Пакет devnet-релиза и оставшиеся настройки](docs/devnet-release.ru.md)

@@ -27,6 +27,12 @@
         "category": "ux",
         "description": "Device clock could expose disputes prematurely",
         "fix": "Use finalized Solana clock for monetary action windows"
+      },
+      {
+        "severity": "medium",
+        "category": "ux",
+        "description": "Event booking button still used device time and could disable a valid reservation",
+        "fix": "Use Solana clock on the event page; browser regression covers device drift, RPC failure and recovery"
       }
     ]
   }

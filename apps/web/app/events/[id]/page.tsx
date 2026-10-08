@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useApp } from '../../../components/providers';
 import {
   useResource,
+  useChainClock,
   PageTitle,
   LoadState,
   Terms,
@@ -14,6 +15,7 @@ export default function EventPage() {
   const { id } = useParams<{ id: string }>(),
     r = useResource<Event>(`events/${id}`),
     app = useApp(),
+    chainNow = useChainClock(),
     router = useRouter(),
     [busy, setBusy] = useState(false),
     [accepted, setAccepted] = useState<string[]>([]);
@@ -47,6 +49,11 @@ export default function EventPage() {
             {r.data.location} {r.data.cancelled && '· Событие отменено'}
           </p>
           <div className="stack">
+            {chainNow === null && (
+              <p role="status" className="text-sm text-muted-foreground">
+                Проверяем доступность регистрации. Ожидаем время сети…
+              </p>
+            )}
             {r.data.sessions.map((s) => (
               <section
                 key={s.id}
@@ -81,12 +88,21 @@ export default function EventPage() {
                       busy ||
                       r.data?.cancelled ||
                       !s.published ||
-                      Date.now() / 1000 >= s.policy.bookingClose
+                      chainNow === null ||
+                      chainNow >= s.policy.bookingClose
                     }
                     onClick={() => void reserve(s.id)}
                   >
                     Забронировать место
                   </Button>
+                  {chainNow !== null && chainNow >= s.policy.bookingClose && (
+                    <p
+                      role="status"
+                      className="mt-3 text-sm text-muted-foreground"
+                    >
+                      Регистрация закрыта.
+                    </p>
+                  )}
                   <p className="mt-4 text-xs text-muted-foreground">
                     Если мест нет, добавим в очередь. Залог вносится только
                     после получения места. Подтверждение условий ещё не

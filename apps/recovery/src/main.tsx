@@ -1,3 +1,8 @@
+import {
+  useI18n,
+  LanguageProvider,
+  LanguageSwitcher,
+} from '../../../packages/i18n/react';
 import { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
@@ -16,11 +21,17 @@ import {
 } from '@solana/kit-plugin-wallet/react';
 import { connection, readDeposit, prepareRefund } from './recovery';
 import { displayAmount } from '../../../packages/domain/src';
+import { intlLocale } from '../../../packages/i18n';
 import './style.css';
 const isLocalHost = ['localhost', '127.0.0.1', '[::1]'].includes(
   window.location.hostname,
 );
 function App() {
+  const { t, locale, message: localizeMessage } = useI18n();
+
+  useEffect(() => {
+    document.title = `AttendBack — ${t('Резервный возврат')}`;
+  }, [t]);
   const [cluster, setCluster] = useState(isLocalHost ? 'localnet' : 'devnet'),
     [url, setUrl] = useState(
       isLocalHost ? 'http://127.0.0.1:8899' : 'https://api.devnet.solana.com',
@@ -90,18 +101,19 @@ function App() {
   };
   return (
     <main>
+      <LanguageSwitcher />
       <p className="eyebrow">
-        AttendBack · {cluster} · только тестовые средства
+        {t('AttendBack · {0} · только тестовые средства', [cluster])}
       </p>
-      <h1>Резервный возврат</h1>
+      <h1>{t('Резервный возврат')}</h1>
       <p>
-        Эта страница работает напрямую с Solana RPC. Сервер и база AttendBack не
-        нужны. Получатель зафиксирован в депозите; подключённый кошелёк
-        оплачивает только комиссию.
+        {t(
+          'Эта страница работает напрямую с Solana RPC. Сервер и база AttendBack не нужны. Получатель зафиксирован в депозите; подключённый кошелёк оплачивает только комиссию.',
+        )}
       </p>
       <section>
         <label>
-          Сеть
+          {t('Сеть')}
           <select
             value={cluster}
             disabled={busy}
@@ -121,7 +133,7 @@ function App() {
           </select>
         </label>
         <label>
-          Адрес RPC
+          {t('Адрес RPC')}
           <input
             type="url"
             value={url}
@@ -134,7 +146,7 @@ function App() {
           />
         </label>
         <label>
-          Адрес депозита
+          {t('Адрес депозита')}
           <input
             value={deposit}
             disabled={busy}
@@ -148,11 +160,11 @@ function App() {
           />
         </label>
         <button disabled={busy || !deposit} onClick={() => void run(inspect)}>
-          Проверить депозит
+          {t('Проверить депозит')}
         </button>
       </section>
       <section>
-        <h2>Кошелёк для комиссии</h2>
+        <h2>{t('Кошелёк для комиссии')}</h2>
         {connected && <p className="mono">{connected.account.address}</p>}
         <div className="buttons">
           {wallets.map((w) => (
@@ -167,31 +179,35 @@ function App() {
                 })
               }
             >
-              {w.name}
+              {w.name.startsWith('Тест · ')
+                ? t('Тест · {0}', [t(w.name.slice(7))])
+                : w.name}
             </button>
           ))}
         </div>
         {!wallets.length && (
-          <p>Подключите совместимый кошелёк Wallet Standard.</p>
+          <p>{t('Подключите совместимый кошелёк Wallet Standard.')}</p>
         )}
       </section>
       {state && (
         <section>
-          <h2>Проверенные условия</h2>
+          <h2>{t('Проверенные условия')}</h2>
           <dl>
-            <dt>Получатель возврата</dt>
+            <dt>{t('Получатель возврата')}</dt>
             <dd className="mono">{state.c.guest}</dd>
-            <dt>Залог</dt>
-            <dd>{displayAmount(state.c.principal)} тестовых USDC</dd>
+            <dt>{t('Залог')}</dt>
+            <dd>
+              {t('{0} тестовых USDC', [displayAmount(state.c.principal)])}
+            </dd>
             <dt>Mint</dt>
             <dd className="mono">{state.p.mint}</dd>
-            <dt>Защитный срок</dt>
+            <dt>{t('Защитный срок')}</dt>
             <dd>
               {new Date(
                 Number(state.p.terms.hardRefundAt) * 1000,
-              ).toLocaleString('ru-RU')}
+              ).toLocaleString(intlLocale(locale))}
             </dd>
-            <dt>Уже возвращено</dt>
+            <dt>{t('Уже возвращено')}</dt>
             <dd>{displayAmount(state.c.refund)} USDC</dd>
           </dl>
           <button
@@ -221,23 +237,25 @@ function App() {
               })
             }
           >
-            Подготовить возврат
+            {t('Подготовить возврат')}
           </button>
         </section>
       )}
       {prepared && (
         <section className="confirm">
-          <h2>Подтвердите возврат</h2>
+          <h2>{t('Подтвердите возврат')}</h2>
           <p>
-            Вернуть {displayAmount(prepared.state.c.principal)} тестовых USDC в
-            сети {prepared.cluster} на кошелёк:
+            {t('Вернуть {0} тестовых USDC в сети {1} на кошелёк:', [
+              displayAmount(prepared.state.c.principal),
+              prepared.cluster,
+            ])}
           </p>
           <p className="mono">{prepared.state.c.guest}</p>
-          <p>Плательщик комиссии и хранения аккаунтов:</p>
+          <p>{t('Плательщик комиссии и хранения аккаунтов:')}</p>
           <p className="mono">{prepared.feePayer}</p>
           <div className="buttons">
             <button disabled={busy} onClick={() => setPrepared(undefined)}>
-              Отмена
+              {t('Отмена')}
             </button>
             <button
               disabled={busy}
@@ -285,23 +303,27 @@ function App() {
                 })
               }
             >
-              Подписать возврат
+              {t('Подписать возврат')}
             </button>
           </div>
         </section>
       )}
       <p role="status" className="message">
-        {message}
+        {localizeMessage(message)}
       </p>
       <button disabled={busy || !deposit} onClick={() => void run(check)}>
-        Проверить подтверждение
+        {t('Проверить подтверждение')}
       </button>
       <p className="small">
-        Если RPC недоступен, выберите другой RPC той же сети. Страница не может
-        ускорить защитный срок или заменить решение арбитра. Исходный код и IDL
-        нужно распространять вместе с релизом.
+        {t(
+          'Если RPC недоступен, выберите другой RPC той же сети. Страница не может ускорить защитный срок или заменить решение арбитра. Исходный код и IDL нужно распространять вместе с релизом.',
+        )}
       </p>
     </main>
   );
 }
-createRoot(document.getElementById('root')!).render(<App />);
+createRoot(document.getElementById('root')!).render(
+  <LanguageProvider>
+    <App />
+  </LanguageProvider>,
+);

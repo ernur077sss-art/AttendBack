@@ -1,4 +1,6 @@
 'use client';
+import { useI18n } from '../../../../../packages/i18n/react';
+
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useApp } from '../../../components/providers';
@@ -10,8 +12,10 @@ import {
   Terms,
 } from '../../../components/common';
 import { Button } from '../../../components/ui/button';
-import { api, type Event, type Registration, date } from '../../../lib/api';
+import { api, type Event, type Registration } from '../../../lib/api';
 export default function EventPage() {
+  const { t, date } = useI18n();
+
   const { id } = useParams<{ id: string }>(),
     r = useResource<Event>(`events/${id}`),
     app = useApp(),
@@ -46,12 +50,12 @@ export default function EventPage() {
             description={r.data.description}
           />
           <p className="mb-8 text-muted-foreground">
-            {r.data.location} {r.data.cancelled && '· Событие отменено'}
+            {r.data.location} {r.data.cancelled && t('· Событие отменено')}
           </p>
           <div className="stack">
             {chainNow === null && (
               <p role="status" className="text-sm text-muted-foreground">
-                Проверяем доступность регистрации. Ожидаем время сети…
+                {t('Проверяем доступность регистрации. Ожидаем время сети…')}
               </p>
             )}
             {r.data.sessions.map((s) => (
@@ -61,11 +65,14 @@ export default function EventPage() {
               >
                 <div className="panel self-start">
                   <p className="eyebrow mb-3">
-                    {s.published ? 'Регистрация' : 'Черновик'}
+                    {s.published ? t('Регистрация') : t('Черновик')}
                   </p>
                   <h2 className="text-2xl font-semibold mb-4">{s.title}</h2>
                   <p className="text-muted-foreground mb-6">
-                    {s.capacity} мест · Вход {date(s.policy.checkinOpen)}
+                    {t('{0} мест · Вход {1}', [
+                      s.capacity,
+                      date(s.policy.checkinOpen),
+                    ])}
                   </p>
                   <label className="flex items-start gap-3 text-sm mb-6">
                     <input
@@ -80,7 +87,9 @@ export default function EventPage() {
                       }
                       className="min-h-5 size-5 shrink-0"
                     />
-                    Я прочитал условия залога, сроки возврата и правила неявки.
+                    {t(
+                      'Я прочитал условия залога, сроки возврата и правила неявки.',
+                    )}
                   </label>
                   <Button
                     disabled={
@@ -93,20 +102,20 @@ export default function EventPage() {
                     }
                     onClick={() => void reserve(s.id)}
                   >
-                    Забронировать место
+                    {t('Забронировать место')}
                   </Button>
                   {chainNow !== null && chainNow >= s.policy.bookingClose && (
                     <p
                       role="status"
                       className="mt-3 text-sm text-muted-foreground"
                     >
-                      Регистрация закрыта.
+                      {t('Регистрация закрыта.')}
                     </p>
                   )}
                   <p className="mt-4 text-xs text-muted-foreground">
-                    Если мест нет, добавим в очередь. Залог вносится только
-                    после получения места. Подтверждение условий ещё не
-                    списывает токены.
+                    {t(
+                      'Если мест нет, добавим в очередь. Залог вносится только после получения места. Подтверждение условий ещё не списывает токены.',
+                    )}
                   </p>
                 </div>
                 <Terms policy={s.policy} />

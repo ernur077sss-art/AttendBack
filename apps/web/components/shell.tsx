@@ -1,12 +1,17 @@
 'use client';
+import { useI18n, LanguageSwitcher } from '../../../packages/i18n/react';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ArrowUpRight, RotateCcw, Wallet } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useApp } from './providers';
 import { Button } from './ui/button';
+import { languageUrl } from '../../../packages/i18n';
 import { short } from '../lib/api';
 export function Shell({ children }: { children: ReactNode }) {
+  const { t, locale } = useI18n();
+
   const app = useApp(),
     path = usePathname();
   const recoveryUrl =
@@ -15,11 +20,12 @@ export function Shell({ children }: { children: ReactNode }) {
   return (
     <>
       <a className="sr-only focus:not-sr-only" href="#main">
-        К содержимому
+        {t('К содержимому')}
       </a>
       <div className="border-b bg-muted text-center text-xs py-2 px-4">
-        Тестовая сеть {app.config.cluster} · Тестовые USDC не имеют денежной
-        стоимости
+        {t('Тестовая сеть {0} · Тестовые USDC не имеют денежной стоимости', [
+          app.config.cluster,
+        ])}
       </div>
       <header className="border-b bg-card">
         <div className="shell flex min-h-20 flex-wrap items-center gap-x-8 gap-y-3 py-4">
@@ -34,7 +40,7 @@ export function Shell({ children }: { children: ReactNode }) {
             </span>
           </Link>
           <nav
-            aria-label="Основная навигация"
+            aria-label={t('Основная навигация')}
             className="order-3 flex w-full gap-1 overflow-x-auto md:order-none md:w-auto md:flex-1"
           >
             {[
@@ -51,13 +57,18 @@ export function Shell({ children }: { children: ReactNode }) {
                 aria-current={path === href ? 'page' : undefined}
                 className={`whitespace-nowrap rounded-md px-3 py-2.5 text-sm ${path === href ? 'bg-muted font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
               >
-                {label}
+                {t(label)}
               </Link>
             ))}
           </nav>
-          <Button className="ml-auto" variant="outline" onClick={app.login}>
+          <LanguageSwitcher />
+          <Button
+            className="ml-auto sm:ml-0"
+            variant="outline"
+            onClick={app.login}
+          >
             <Wallet size={16} aria-hidden="true" />
-            {app.me ? short(app.me.wallet) : 'Войти'}
+            {app.me ? short(app.me.wallet) : t('Войти')}
           </Button>
         </div>
       </header>
@@ -66,15 +77,18 @@ export function Shell({ children }: { children: ReactNode }) {
       </main>
       <footer className="border-t">
         <div className="shell flex flex-wrap justify-between gap-4 py-6 text-xs text-muted-foreground">
-          <span>AttendBack · Место забронировано. Условия зафиксированы.</span>
+          <span>
+            {t('AttendBack · Место забронировано. Условия зафиксированы.')}
+          </span>
           {recoveryUrl && (
             <a
               className="flex gap-1 underline underline-offset-4"
-              href={recoveryUrl}
+              href={languageUrl(recoveryUrl, locale)}
               target="_blank"
               rel="noreferrer"
             >
-              Резервный возврат <ArrowUpRight size={14} aria-hidden="true" />
+              {t('Резервный возврат ')}
+              <ArrowUpRight size={14} aria-hidden="true" />
             </a>
           )}
         </div>

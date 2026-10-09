@@ -1,4 +1,6 @@
 'use client';
+import { useI18n } from '../../../packages/i18n/react';
+
 import {
   useCallback,
   useEffect,
@@ -8,7 +10,7 @@ import {
 } from 'react';
 import Link from 'next/link';
 import { ArrowRight, CalendarDays, MapPin, ShieldCheck } from 'lucide-react';
-import { api, date, type Event, statuses } from '../lib/api';
+import { api, type Event, statuses } from '../lib/api';
 import type { Policy } from '../../../packages/domain/src';
 import { displayAmount } from '../../../packages/domain/src';
 import { useApp } from './providers';
@@ -105,17 +107,19 @@ export function LoadState({
   error: string;
   retry: () => unknown;
 }) {
+  const { t, message } = useI18n();
+
   return loading ? (
     <div className="panel" role="status">
-      Загружаем данные…
+      {t('Загружаем данные…')}
     </div>
   ) : error ? (
     <div className="panel border-destructive">
       <p role="alert" className="mb-4">
-        {error}
+        {message(error)}
       </p>
       <Button variant="outline" onClick={() => void retry()}>
-        Повторить
+        {t('Повторить')}
       </Button>
     </div>
   ) : null;
@@ -135,36 +139,45 @@ export function Empty({
   );
 }
 export function AuthGate({ children }: { children: ReactNode }) {
+  const { t } = useI18n();
+
   const app = useApp();
   return app.me ? (
     <>{children}</>
   ) : (
     <div className="page">
-      <Empty title="Войдите, чтобы продолжить">
+      <Empty title={t('Войдите, чтобы продолжить')}>
         <p className="mb-6">
-          Билеты и права доступа привязаны к вашему кошельку.
+          {t('Билеты и права доступа привязаны к вашему кошельку.')}
         </p>
-        <Button onClick={app.login}>Подключить кошелёк</Button>
+        <Button onClick={app.login}>{t('Подключить кошелёк')}</Button>
       </Empty>
     </div>
   );
 }
 export function Status({ value }: { value: string | null }) {
+  const { t } = useI18n();
+
   return (
     <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-medium">
-      {value ? (statuses[value] ?? value) : 'Без залога'}
+      {value ? t(statuses[value] ?? value) : t('Без залога')}
     </span>
   );
 }
 export function EventCard({ event }: { event: Event }) {
+  const { t, date } = useI18n();
+
   return (
     <article className="panel flex flex-col gap-5">
       <div className="flex items-center justify-between gap-3">
         <p className="eyebrow">{event.organization}</p>
         <span className="text-xs text-muted-foreground">
           {event.cancelled
-            ? 'Отменено'
-            : `${Math.max(0, event.capacity - event.occupied)} из ${event.capacity} мест`}
+            ? t('Отменено')
+            : t('{0} из {1} мест', [
+                Math.max(0, event.capacity - event.occupied),
+                event.capacity,
+              ])}
         </span>
       </div>
       <div>
@@ -196,14 +209,14 @@ export function EventCard({ event }: { event: Event }) {
             {displayAmount(event.policy.amount)} USDC
           </strong>
           <p className="text-xs text-muted-foreground">
-            возвратный залог · тест
+            {t('возвратный залог · тест')}
           </p>
         </div>
         <Link
           className="flex min-h-10 items-center gap-2 text-sm font-semibold"
           href={`/events/${event.id}`}
         >
-          Подробнее
+          {t('Подробнее')}
           <ArrowRight size={16} aria-hidden="true" />
         </Link>
       </div>
@@ -211,44 +224,48 @@ export function EventCard({ event }: { event: Event }) {
   );
 }
 export function Terms({ policy: p }: { policy: Policy }) {
+  const { t, date } = useI18n();
+
   return (
     <div className="panel">
       <h2 className="mb-5 flex items-center gap-2 text-lg font-semibold">
         <ShieldCheck size={20} aria-hidden="true" />
-        Условия залога
+        {t('Условия залога')}
       </h2>
       <dl className="review-grid">
-        <dt>Залог</dt>
-        <dd>{displayAmount(p.amount)} тестовых USDC</dd>
-        <dt>После посещения</dt>
-        <dd>100% залога после подтверждения сотрудником</dd>
-        <dt>Бесплатная отмена</dt>
-        <dd>До {date(p.freeCancelUntil)}</dd>
-        <dt>Поздняя отмена / неявка</dt>
-        <dd>Удержание {p.penaltyBps / 100}%, после окна оспаривания</dd>
-        <dt>Время входа</dt>
+        <dt>{t('Залог')}</dt>
+        <dd>{t('{0} тестовых USDC', [displayAmount(p.amount)])}</dd>
+        <dt>{t('После посещения')}</dt>
+        <dd>{t('100% залога после подтверждения сотрудником')}</dd>
+        <dt>{t('Бесплатная отмена')}</dt>
+        <dd>{t('До {0}', [date(p.freeCancelUntil)])}</dd>
+        <dt>{t('Поздняя отмена / неявка')}</dt>
+        <dd>
+          {t('Удержание {0}%, после окна оспаривания', [p.penaltyBps / 100])}
+        </dd>
+        <dt>{t('Время входа')}</dt>
         <dd>
           {date(p.checkinOpen)} — {date(p.checkinClose)}
         </dd>
-        <dt>Открыть спор</dt>
-        <dd>После окончания входа, до {date(p.disputeDeadline)}</dd>
-        <dt>Решение арбитра</dt>
-        <dd>До {date(p.resolutionDeadline)}</dd>
-        <dt>Защитный возврат</dt>
-        <dd>С {date(p.hardRefundAt)} — весь незавершённый залог</dd>
+        <dt>{t('Открыть спор')}</dt>
+        <dd>{t('После окончания входа, до {0}', [date(p.disputeDeadline)])}</dd>
+        <dt>{t('Решение арбитра')}</dt>
+        <dd>{t('До {0}', [date(p.resolutionDeadline)])}</dd>
+        <dt>{t('Защитный возврат')}</dt>
+        <dd>{t('С {0} — весь незавершённый залог', [date(p.hardRefundAt)])}</dd>
       </dl>
       <details className="mt-5 text-xs">
         <summary className="cursor-pointer min-h-10 py-2 text-muted-foreground">
-          Адреса и доверие
+          {t('Адреса и доверие')}
         </summary>
         <p className="my-2">
-          Присутствие подтверждает сотрудник, спор решает назначенный арбитр.
-          Комиссии Solana и хранение аккаунтов не входят в залог. Программа
-          обновляема владельцем upgrade authority.
+          {t(
+            'Присутствие подтверждает сотрудник, спор решает назначенный арбитр. Комиссии Solana и хранение аккаунтов не входят в залог. Программа обновляема владельцем upgrade authority.',
+          )}
         </p>
         <dl className="grid gap-2 break-all">
-          <dt>Арбитр: {p.resolver}</dt>
-          <dt>Получатель удержания: {p.penaltyRecipient}</dt>
+          <dt>{t('Арбитр: {0}', [p.resolver])}</dt>
+          <dt>{t('Получатель удержания: {0}', [p.penaltyRecipient])}</dt>
           <dt>Mint: {p.mint}</dt>
         </dl>
       </details>

@@ -26,10 +26,12 @@ test('organizer creates a draft and publishes immutable policy from the UI', asy
   const orgForm = page.locator('form').filter({
     has: page.getByRole('heading', { name: 'Организация', exact: true }),
   });
-  await orgForm
-    .getByLabel('Название', { exact: true })
-    .fill(`Demo Team ${Date.now()}`);
+  const organizationName = `Demo Team ${Date.now()}`;
+  await orgForm.getByLabel('Название', { exact: true }).fill(organizationName);
   await orgForm.getByRole('button', { name: 'Создать организацию' }).click();
+  await expect(
+    page.getByLabel('Рабочая организация').locator('option:checked'),
+  ).toHaveText(organizationName);
   const eventForm = page.locator('form').filter({
     has: page.getByRole('heading', { name: 'Новое событие', exact: true }),
   });

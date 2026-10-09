@@ -1,4 +1,6 @@
 'use client';
+import { useI18n } from '../../../../packages/i18n/react';
+
 import { useApp } from '../../components/providers';
 import {
   AuthGate,
@@ -8,7 +10,7 @@ import {
   useResource,
 } from '../../components/common';
 import { Button } from '../../components/ui/button';
-import { api, date, short } from '../../lib/api';
+import { api, short } from '../../lib/api';
 import { displayAmount } from '../../../../packages/domain/src';
 type Receipt = {
   id: string;
@@ -33,14 +35,18 @@ export default function Ledger() {
   );
 }
 function Content() {
+  const { t, date } = useI18n();
+
   const app = useApp(),
     r = useResource<Receipt[]>('ledger'),
     jobs = useResource<Job[]>('jobs');
   return (
     <div className="page">
       <PageTitle
-        title="Реестр расчётов"
-        description="Только окончательно подтверждённые переводы. Комиссии сети не включены в суммы залога."
+        title={t('Реестр расчётов')}
+        description={t(
+          'Только окончательно подтверждённые переводы. Комиссии сети не включены в суммы залога.',
+        )}
         action={
           <Button
             variant="outline"
@@ -49,14 +55,14 @@ function Content() {
               void jobs.reload();
             }}
           >
-            Обновить
+            {t('Обновить')}
           </Button>
         }
       />
       <LoadState {...r} retry={r.reload} />
       {r.data?.length === 0 && (
-        <Empty title="Расчётов пока нет">
-          Квитанция появится после подтверждения выплаты сетью.
+        <Empty title={t('Расчётов пока нет')}>
+          {t('Квитанция появится после подтверждения выплаты сетью.')}
         </Empty>
       )}
       {!!r.data?.length && (
@@ -64,11 +70,11 @@ function Content() {
           <table>
             <thead>
               <tr>
-                <th>Событие</th>
-                <th>Возврат</th>
-                <th>Удержано</th>
-                <th>Подпись</th>
-                <th>Подтверждено</th>
+                <th>{t('Событие')}</th>
+                <th>{t('Возврат')}</th>
+                <th>{t('Удержано')}</th>
+                <th>{t('Подпись')}</th>
+                <th>{t('Подтверждено')}</th>
               </tr>
             </thead>
             <tbody>
@@ -110,7 +116,7 @@ function Content() {
       {!!jobs.data?.length && (
         <section className="mt-10">
           <h2 className="text-xl font-semibold mb-5">
-            Очередь и ошибки обработки
+            {t('Очередь и ошибки обработки')}
           </h2>
           <div className="panel stack">
             {jobs.data.map((j) => (
@@ -120,11 +126,14 @@ function Content() {
               >
                 <div>
                   <p>
-                    {j.kind} · {j.status}
+                    {t(jobLabels[j.kind] ?? j.kind)} ·{' '}
+                    {t(jobLabels[j.status] ?? j.status)}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {j.error_code ?? 'Обработка запланирована'} · попыток:{' '}
-                    {j.attempts}
+                    {t('{0} · попыток: {1}', [
+                      j.error_code ?? t('Обработка запланирована'),
+                      j.attempts,
+                    ])}
                   </p>
                 </div>
                 {j.status === 'failed' && j.kind !== 'sync' && (
@@ -139,7 +148,7 @@ function Content() {
                       }
                     }}
                   >
-                    Повторить обработку
+                    {t('Повторить обработку')}
                   </Button>
                 )}
               </div>
@@ -150,3 +159,17 @@ function Content() {
     </div>
   );
 }
+
+const jobLabels: Record<string, string> = {
+  attest: 'Подтверждение посещения',
+  no_show: 'Проверка неявки',
+  settle: 'Расчёт залога',
+  timeout: 'Защитный возврат',
+  sync: 'Синхронизация',
+  notify: 'Уведомление',
+  ready: 'В очереди',
+  leased: 'В обработке',
+  submitted: 'Отправлено в сеть',
+  done: 'Готово',
+  failed: 'Ошибка',
+};

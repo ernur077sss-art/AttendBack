@@ -1,4 +1,6 @@
 'use client';
+import { useI18n } from '../../../packages/i18n/react';
+
 import { useState, type FormEvent } from 'react';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -30,6 +32,13 @@ export function SessionForm({
   eventId?: string;
   onSaved: (id: string) => void;
 }) {
+  const { t, message } = useI18n();
+
+  const [initialDeadlines] = useState(() =>
+    Object.fromEntries(
+      deadlines.map(([key, , offset]) => [key, localDate(offset)]),
+    ),
+  );
   const app = useApp(),
     [busy, setBusy] = useState(false),
     [error, setError] = useState('');
@@ -83,44 +92,44 @@ export function SessionForm({
   return (
     <form onSubmit={submit} className="panel stack">
       <h2 className="text-xl font-semibold">
-        {eventId ? 'Новая сессия' : 'Новое событие'}
+        {eventId ? t('Новая сессия') : t('Новое событие')}
       </h2>
       {error && (
         <p role="alert" className="text-destructive">
-          {error}
+          {message(error)}
         </p>
       )}
       <label className="field">
-        Название
+        {t('Название')}
         <Input
           name="title"
           minLength={3}
           maxLength={140}
           required
-          placeholder="Например, Builders Meetup"
+          placeholder={t('Например, Builders Meetup')}
         />
       </label>
       <label className="field">
-        Описание
+        {t('Описание')}
         <Textarea
           name="description"
           maxLength={4000}
-          placeholder="Что будет на событии и кому оно подойдёт"
+          placeholder={t('Что будет на событии и кому оно подойдёт')}
         />
       </label>
       <label className="field">
-        Место проведения
+        {t('Место проведения')}
         <Input
           name="location"
           minLength={2}
           maxLength={240}
           required
-          placeholder="Город, площадка, адрес"
+          placeholder={t('Город, площадка, адрес')}
         />
       </label>
       <div className="grid gap-4 sm:grid-cols-3">
         <label className="field">
-          Количество мест
+          {t('Количество мест')}
           <Input
             name="capacity"
             type="number"
@@ -131,11 +140,11 @@ export function SessionForm({
           />
         </label>
         <label className="field">
-          Залог, USDC (тест)
+          {t('Залог, USDC (тест)')}
           <Input name="amount" inputMode="decimal" defaultValue="5" required />
         </label>
         <label className="field">
-          Удержание, %
+          {t('Удержание, %')}
           <Input
             name="penalty"
             type="number"
@@ -149,16 +158,16 @@ export function SessionForm({
       </div>
       <fieldset className="stack">
         <legend className="font-semibold mb-4">
-          Сроки · часовой пояс вашего устройства
+          {t('Сроки · часовой пояс вашего устройства')}
         </legend>
         <div className="grid gap-4 sm:grid-cols-2">
-          {deadlines.map(([key, label, offset]) => (
+          {deadlines.map(([key, label]) => (
             <label key={key} className="field text-sm">
-              {label}
+              {t(label)}
               <Input
                 type="datetime-local"
                 name={key}
-                defaultValue={localDate(offset)}
+                defaultValue={initialDeadlines[key]}
                 required
               />
             </label>
@@ -166,7 +175,7 @@ export function SessionForm({
         </div>
       </fieldset>
       <label className="field">
-        Кошелёк арбитра
+        {t('Кошелёк арбитра')}
         <Input
           name="resolver"
           defaultValue={app.wallet ?? ''}
@@ -178,7 +187,7 @@ export function SessionForm({
         />
       </label>
       <label className="field">
-        Получатель удержания
+        {t('Получатель удержания')}
         <Input
           name="recipient"
           defaultValue={app.wallet ?? ''}
@@ -190,12 +199,12 @@ export function SessionForm({
         />
       </label>
       <p className="text-sm text-muted-foreground">
-        Сначала создаётся черновик. Проверьте сроки перед публикацией: после
-        подписи эти условия нельзя изменить. Арбитру нужно назначить роль в
-        организации.
+        {t(
+          'Сначала создаётся черновик. Проверьте сроки перед публикацией: после подписи эти условия нельзя изменить. Арбитру нужно назначить роль в организации.',
+        )}
       </p>
       <Button disabled={busy}>
-        {busy ? 'Сохраняем…' : 'Сохранить черновик'}
+        {busy ? t('Сохраняем…') : t('Сохранить черновик')}
       </Button>
     </form>
   );

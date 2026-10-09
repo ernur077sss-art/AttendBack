@@ -1,4 +1,6 @@
 'use client';
+import { useI18n, LanguageSwitcher } from '../../../packages/i18n/react';
+
 import {
   createContext,
   useContext,
@@ -67,6 +69,8 @@ export function useApp() {
   return c;
 }
 export function Providers({ children }: { children: ReactNode }) {
+  const { t, message } = useI18n();
+
   const [config, setConfig] = useState<Config>();
   const [error, setError] = useState('');
   const load = () =>
@@ -79,9 +83,10 @@ export function Providers({ children }: { children: ReactNode }) {
   if (!config)
     return (
       <main className="mx-auto max-w-3xl p-8">
+        <LanguageSwitcher />
         <h1 className="text-3xl font-semibold">AttendBack</h1>
         <p role="status" className="my-6">
-          {error || 'Подключаемся к AttendBack…'}
+          {message(error) || t('Подключаемся к AttendBack…')}
         </p>
         {error && (
           <Button
@@ -90,7 +95,7 @@ export function Providers({ children }: { children: ReactNode }) {
               void load();
             }}
           >
-            Повторить подключение
+            {t('Повторить подключение')}
           </Button>
         )}
       </main>
@@ -104,6 +109,8 @@ function WalletProvider({
   children: ReactNode;
   config: Config;
 }) {
+  const { t, message } = useI18n();
+
   const client = useMemo(() => makeClient(config.cluster), [config.cluster]);
   const connected = useConnectedWallet(client),
     wallets = useWallets(client);
@@ -276,14 +283,14 @@ function WalletProvider({
         <div className="notice" role="status" aria-live="polite">
           {notice && (
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <span>{notice}</span>
+              <span>{message(notice)}</span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setNotice('')}
-                aria-label="Скрыть уведомление"
+                aria-label={t('Скрыть уведомление')}
               >
-                Закрыть
+                {t('Закрыть')}
               </Button>
             </div>
           )}
@@ -291,17 +298,19 @@ function WalletProvider({
         <Dialog open={walletOpen} onOpenChange={setWalletOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Кошелёк AttendBack</DialogTitle>
+              <DialogTitle>{t('Кошелёк AttendBack')}</DialogTitle>
               <DialogDescription>
-                Сеть {config.cluster}. Для входа подпишите одноразовое
-                сообщение. Средства остаются под контролем кошелька.
+                {t(
+                  'Сеть {0}. Для входа подпишите одноразовое сообщение. Средства остаются под контролем кошелька.',
+                  [config.cluster],
+                )}
               </DialogDescription>
             </DialogHeader>
             {connected && (
               <>
                 <p className="break-all font-mono text-xs">{wallet}</p>
                 <Button disabled={busy} onClick={() => void run(authenticate)}>
-                  Подписать вход
+                  {t('Подписать вход')}
                 </Button>
                 {me && config.cluster === 'localnet' && (
                   <Button
@@ -316,7 +325,7 @@ function WalletProvider({
                       })
                     }
                   >
-                    Получить тестовые токены
+                    {t('Получить тестовые токены')}
                   </Button>
                 )}
                 <Button
@@ -330,7 +339,7 @@ function WalletProvider({
                     })
                   }
                 >
-                  Отключить кошелёк
+                  {t('Отключить кошелёк')}
                 </Button>
               </>
             )}
@@ -347,21 +356,25 @@ function WalletProvider({
                     })
                   }
                 >
-                  {w.name}
+                  {w.name.startsWith('Тест · ')
+                    ? t('Тест · {0}', [t(w.name.slice(7))])
+                    : w.name}
                 </Button>
               ))}
             </div>
             {!wallets.length && (
               <p>
-                Совместимый кошелёк не найден. Установите кошелёк Wallet
-                Standard с поддержкой Solana {config.cluster} и обновите
-                страницу.
+                {t(
+                  'Совместимый кошелёк не найден. Установите кошелёк Wallet Standard с поддержкой Solana {0} и обновите страницу.',
+                  [config.cluster],
+                )}
               </p>
             )}
             {config.cluster === 'localnet' && (
               <p className="text-xs text-muted-foreground">
-                «Тест» — общедоступные одноразовые роли только для локальной
-                демонстрации. Не переводите на них реальные средства.
+                {t(
+                  '«Тест» — общедоступные одноразовые роли только для локальной демонстрации. Не переводите на них реальные средства.',
+                )}
               </p>
             )}
             {wallet && (
@@ -379,7 +392,7 @@ function WalletProvider({
                   })
                 }
               >
-                Проверить транзакцию
+                {t('Проверить транзакцию')}
               </Button>
             )}
           </DialogContent>
@@ -392,40 +405,46 @@ function WalletProvider({
         >
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Подтвердите действие</DialogTitle>
+              <DialogTitle>{t('Подтвердите действие')}</DialogTitle>
               <DialogDescription>
-                Симуляция прошла. Проверьте условия до подписи в кошельке.
+                {t(
+                  'Симуляция прошла. Проверьте условия до подписи в кошельке.',
+                )}
               </DialogDescription>
             </DialogHeader>
             {prepared && (
               <dl className="review-grid">
-                <dt>Действие</dt>
+                <dt>{t('Действие')}</dt>
                 <dd>
-                  {actionLabels[prepared.summary.action] ??
-                    prepared.summary.action}
+                  {t(
+                    actionLabels[prepared.summary.action] ??
+                      prepared.summary.action,
+                  )}
                 </dd>
-                <dt>Залог</dt>
+                <dt>{t('Залог')}</dt>
                 <dd>
-                  {displayAmount(prepared.summary.principal)} тестовых USDC
+                  {t('{0} тестовых USDC', [
+                    displayAmount(prepared.summary.principal),
+                  ])}
                 </dd>
-                <dt>Удержание при неявке</dt>
+                <dt>{t('Удержание при неявке')}</dt>
                 <dd>{prepared.summary.penaltyBps / 100}%</dd>
-                <dt>Сеть</dt>
+                <dt>{t('Сеть')}</dt>
                 <dd>{prepared.summary.cluster}</dd>
-                <dt>Плательщик комиссии</dt>
+                <dt>{t('Плательщик комиссии')}</dt>
                 <dd title={prepared.summary.feePayer}>
                   {short(prepared.summary.feePayer)}
                 </dd>
-                <dt>Получатель возврата</dt>
+                <dt>{t('Получатель возврата')}</dt>
                 <dd className="break-all text-xs">{prepared.summary.guest}</dd>
-                <dt>Получатель удержания</dt>
+                <dt>{t('Получатель удержания')}</dt>
                 <dd className="break-all text-xs">
                   {prepared.summary.penaltyRecipient}
                 </dd>
                 <dt>Mint</dt>
                 <dd className="break-all text-xs">{prepared.summary.mint}</dd>
-                <dt>Комиссия</dt>
-                <dd>{prepared.summary.fees}</dd>
+                <dt>{t('Комиссия')}</dt>
+                <dd>{message(prepared.summary.fees)}</dd>
               </dl>
             )}
             <DialogFooter>
@@ -433,10 +452,10 @@ function WalletProvider({
                 variant="outline"
                 onClick={() => decision.current?.(false)}
               >
-                Отмена
+                {t('Отмена')}
               </Button>
               <Button onClick={() => decision.current?.(true)}>
-                Подписать транзакцию
+                {t('Подписать транзакцию')}
               </Button>
             </DialogFooter>
           </DialogContent>

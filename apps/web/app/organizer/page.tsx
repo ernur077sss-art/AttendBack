@@ -1,4 +1,6 @@
 'use client';
+import { useI18n } from '../../../../packages/i18n/react';
+
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -9,6 +11,8 @@ import { Input } from '../../components/ui/input';
 import { SessionForm } from '../../components/session-form';
 import { api } from '../../lib/api';
 export default function Organizer() {
+  const { t, message } = useI18n();
+
   const app = useApp(),
     router = useRouter(),
     [org, setOrg] = useState(''),
@@ -35,12 +39,14 @@ export default function Organizer() {
     <AuthGate>
       <div className="page">
         <PageTitle
-          title="Кабинет организатора"
-          description="Создавайте события, управляйте доступом и отслеживайте явку."
+          title={t('Кабинет организатора')}
+          description={t(
+            'Создавайте события, управляйте доступом и отслеживайте явку.',
+          )}
         />
         {error && (
           <p role="alert" className="panel mb-5 border-destructive">
-            {error}
+            {message(error)}
           </p>
         )}
         <div className="grid gap-6 lg:grid-cols-[1fr_1.3fr]">
@@ -58,25 +64,25 @@ export default function Organizer() {
                 });
               }}
             >
-              <h2 className="text-xl font-semibold">Организация</h2>
+              <h2 className="text-xl font-semibold">{t('Организация')}</h2>
               <label className="field">
-                Название
+                {t('Название')}
                 <Input
                   name="name"
                   required
                   minLength={2}
                   maxLength={140}
-                  placeholder="Ваша команда или площадка"
+                  placeholder={t('Ваша команда или площадка')}
                 />
               </label>
               <Button variant="outline" disabled={busy}>
-                Создать организацию
+                {t('Создать организацию')}
               </Button>
             </form>
             {!!editable.length && (
               <div className="panel">
                 <label className="field">
-                  Рабочая организация
+                  {t('Рабочая организация')}
                   <select
                     value={selected}
                     onChange={(e) => setOrg(e.target.value)}
@@ -107,9 +113,11 @@ export default function Organizer() {
                     );
                   }}
                 >
-                  <h2 className="text-xl font-semibold">Назначить доступ</h2>
+                  <h2 className="text-xl font-semibold">
+                    {t('Назначить доступ')}
+                  </h2>
                   <label className="field">
-                    Кошелёк сотрудника
+                    {t('Кошелёк сотрудника')}
                     <Input
                       name="wallet"
                       required
@@ -120,23 +128,25 @@ export default function Organizer() {
                     />
                   </label>
                   <label className="field">
-                    Роль
+                    {t('Роль')}
                     <select name="role">
-                      <option value="staff">Сотрудник входа</option>
-                      <option value="manager">Менеджер</option>
-                      <option value="resolver">Арбитр</option>
+                      <option value="staff">{t('Сотрудник входа')}</option>
+                      <option value="manager">{t('Менеджер')}</option>
+                      <option value="resolver">{t('Арбитр')}</option>
                     </select>
                   </label>
                   <Button variant="outline" disabled={busy}>
-                    Сохранить роль
+                    {t('Сохранить роль')}
                   </Button>
                 </form>
               )}
             <section className="panel">
-              <h2 className="text-xl font-semibold mb-4">Ваши события</h2>
+              <h2 className="text-xl font-semibold mb-4">
+                {t('Ваши события')}
+              </h2>
               {!app.me?.events.length && (
                 <p className="text-sm text-muted-foreground">
-                  Событий пока нет. Начните с черновика.
+                  {t('Событий пока нет. Начните с черновика.')}
                 </p>
               )}
               <ul className="divide-y">
@@ -152,10 +162,10 @@ export default function Organizer() {
                       </Link>
                       <p className="text-xs text-muted-foreground mt-2">
                         {e.cancelled
-                          ? 'Отменено'
+                          ? t('Отменено')
                           : e.published
-                            ? 'Опубликовано'
-                            : 'Черновик'}
+                            ? t('Опубликовано')
+                            : t('Черновик')}
                       </p>
                     </li>
                   ))}

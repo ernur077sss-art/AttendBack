@@ -11,6 +11,8 @@
 
 **Current release:** [public devnet beta](https://attendback-three.vercel.app), hosted on Vercel Hobby + Neon Free. An actual hosted API flow has verified publication, a 1 test-USDC deposit, QR-token check-in, and a finalized automatic refund. Regular-wallet and physical-phone checks, the final video, and submission remain pending.
 
+**Interface languages:** [English](https://attendback-three.vercel.app/?lang=en) · [Русский](https://attendback-three.vercel.app/?lang=ru). Use **RU / EN** in the header; your choice is saved for future visits. Event content stays as written by the organizer. The recovery page supports both languages too.
+
 The [recovery client](https://attendback-recovery.vercel.app) is live. The web/API, isolated signer, database, and durable Workflow are deployed; see [deployment status and setup](docs/free-hosting.ru.md).
 
 ---

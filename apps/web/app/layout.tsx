@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import './globals.css';
 import { Providers } from '../components/providers';
+import { LanguageProvider } from '../../../packages/i18n/react';
 import { Shell } from '../components/shell';
 export const metadata = {
   title: 'AttendBack',
@@ -10,9 +11,11 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="ru">
       <body>
-        <Providers>
-          <Shell>{children}</Shell>
-        </Providers>
+        <LanguageProvider>
+          <Providers>
+            <Shell>{children}</Shell>
+          </Providers>
+        </LanguageProvider>
       </body>
     </html>
   );

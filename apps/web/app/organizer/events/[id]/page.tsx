@@ -1,4 +1,6 @@
 'use client';
+import { useI18n } from '../../../../../../packages/i18n/react';
+
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
@@ -13,12 +15,7 @@ import {
 } from '../../../../components/common';
 import { SessionForm } from '../../../../components/session-form';
 import { Button } from '../../../../components/ui/button';
-import {
-  short,
-  date,
-  type Event,
-  type Registration,
-} from '../../../../lib/api';
+import { short, type Event, type Registration } from '../../../../lib/api';
 type CheckinEntry = {
   id: string;
   actor: string;
@@ -36,6 +33,8 @@ export default function OrganizerEvent() {
   );
 }
 function Content() {
+  const { t, date } = useI18n();
+
   const { id } = useParams<{ id: string }>(),
     app = useApp(),
     r = useResource<Event>(`events/${id}`),
@@ -64,27 +63,28 @@ function Content() {
       {r.data && (
         <>
           <PageTitle
-            overline="Управление событием"
+            overline={t('Управление событием')}
             title={r.data.title}
             action={
               <Link className="link" href={`/events/${id}`}>
-                Публичная страница
+                {t('Публичная страница')}
               </Link>
             }
           />
           <div className="flex flex-wrap gap-4 mb-8">
             <p className="panel flex-1">
-              Регистраций: <strong>{regs.data?.length ?? '—'}</strong>
+              {t('Регистраций: ')}
+              <strong>{regs.data?.length ?? '—'}</strong>
             </p>
             <p className="panel flex-1">
-              Активных билетов:{' '}
+              {t('Активных билетов:')}{' '}
               <strong>
                 {regs.data?.filter((r) => r.seat_state === 'Active').length ??
                   '—'}
               </strong>
             </p>
             <p className="panel flex-1">
-              Отмечено на входе:{' '}
+              {t('Отмечено на входе:')}{' '}
               <strong>
                 {regs.data?.filter((r) => r.checkin_corrected === false)
                   .length ?? '—'}
@@ -98,18 +98,18 @@ function Content() {
                   <div className="flex justify-between gap-4">
                     <h2 className="text-xl font-semibold">{s.title}</h2>
                     <span className="text-sm">
-                      {s.published ? 'Опубликовано' : 'Черновик'}
+                      {s.published ? t('Опубликовано') : t('Черновик')}
                     </span>
                   </div>
                   <p className="my-4 text-sm text-muted-foreground">
-                    {s.capacity} мест
+                    {t('{0} мест', [s.capacity])}
                   </p>
                   {!s.published && edit && (
                     <Button
                       disabled={app.busy}
                       onClick={() => void tx(`sessions/${s.id}/publish`)}
                     >
-                      Опубликовать в Solana
+                      {t('Опубликовать в Solana')}
                     </Button>
                   )}
                 </div>
@@ -118,16 +118,16 @@ function Content() {
             ))}
           </div>
           <section className="panel mt-8">
-            <h2 className="text-xl font-semibold mb-4">Участники</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('Участники')}</h2>
             <LoadState {...regs} retry={regs.reload} />
             <div className="table-scroll">
               <table>
                 <thead>
                   <tr>
-                    <th>Кошелёк</th>
-                    <th>Место</th>
-                    <th>Залог</th>
-                    <th>Вход</th>
+                    <th>{t('Кошелёк')}</th>
+                    <th>{t('Место')}</th>
+                    <th>{t('Залог')}</th>
+                    <th>{t('Вход')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -141,7 +141,9 @@ function Content() {
                         <Status value={row.deposit_state} />
                       </td>
                       <td>
-                        {row.checkin_corrected === false ? 'Подтверждён' : '—'}
+                        {row.checkin_corrected === false
+                          ? t('Подтверждён')
+                          : '—'}
                       </td>
                     </tr>
                   ))}
@@ -152,26 +154,27 @@ function Content() {
           {role && ['owner', 'manager', 'staff'].includes(role) && (
             <section className="panel mt-8">
               <div className="flex items-center justify-between gap-4 mb-4">
-                <h2 className="text-xl font-semibold">Журнал входа</h2>
+                <h2 className="text-xl font-semibold">{t('Журнал входа')}</h2>
                 <Button variant="outline" onClick={() => void history.reload()}>
-                  Обновить журнал
+                  {t('Обновить журнал')}
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                Последние 500 отметок и исправлений: кто выполнил действие и
-                когда.
+                {t(
+                  'Последние 500 отметок и исправлений: кто выполнил действие и когда.',
+                )}
               </p>
               <LoadState {...history} retry={history.reload} />
-              {history.data?.length === 0 && <p>Отметок пока нет.</p>}
+              {history.data?.length === 0 && <p>{t('Отметок пока нет.')}</p>}
               {!!history.data?.length && (
                 <div className="table-scroll">
                   <table>
                     <thead>
                       <tr>
-                        <th>Время</th>
-                        <th>Сессия / участник</th>
-                        <th>Действие</th>
-                        <th>Сотрудник</th>
+                        <th>{t('Время')}</th>
+                        <th>{t('Сессия / участник')}</th>
+                        <th>{t('Действие')}</th>
+                        <th>{t('Сотрудник')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -185,8 +188,8 @@ function Content() {
                           </td>
                           <td>
                             {row.action === 'checkin.corrected'
-                              ? 'Отметка отменена'
-                              : 'Вход подтверждён'}{' '}
+                              ? t('Отметка отменена')
+                              : t('Вход подтверждён')}{' '}
                             · №{row.revision}
                           </td>
                           <td title={row.actor}>{short(row.actor)}</td>
@@ -202,14 +205,14 @@ function Content() {
             <div className="mt-8 stack">
               <div className="flex flex-wrap gap-3">
                 <Button variant="outline" onClick={() => setAdd(!add)}>
-                  {add ? 'Закрыть форму' : 'Добавить сессию'}
+                  {add ? t('Закрыть форму') : t('Добавить сессию')}
                 </Button>
                 <Button
                   variant="outline"
                   disabled={app.busy || r.data.cancelled}
                   onClick={() => void tx(`events/${id}/cancel`)}
                 >
-                  Отменить всё событие
+                  {t('Отменить всё событие')}
                 </Button>
               </div>
               {add && (

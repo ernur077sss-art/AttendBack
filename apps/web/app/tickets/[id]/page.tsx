@@ -1,4 +1,6 @@
 'use client';
+import { useI18n } from '../../../../../packages/i18n/react';
+
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -15,7 +17,7 @@ import {
 } from '../../../components/common';
 import { Button } from '../../../components/ui/button';
 import { Textarea } from '../../../components/ui/textarea';
-import { api, date, to64, type Registration } from '../../../lib/api';
+import { api, to64, type Registration } from '../../../lib/api';
 export default function Ticket() {
   return (
     <AuthGate>
@@ -24,6 +26,8 @@ export default function Ticket() {
   );
 }
 function TicketContent() {
+  const { t, date, message } = useI18n();
+
   const { id } = useParams<{ id: string }>(),
     app = useApp(),
     r = useResource<Registration>(`registrations/${id}`),
@@ -78,13 +82,15 @@ function TicketContent() {
       <LoadState {...r} retry={r.reload} />
       {chainNow === null && (
         <p role="status" className="mb-4 text-sm text-muted-foreground">
-          Уточняем время сети. Денежные действия доступны после ответа RPC.
+          {t(
+            'Уточняем время сети. Денежные действия доступны после ответа RPC.',
+          )}
         </p>
       )}
       {row && p && (
         <>
           <PageTitle
-            overline="Мой билет"
+            overline={t('Мой билет')}
             title={row.title}
             description={`${row.location} · ${date(p.checkinOpen)}`}
             action={
@@ -95,13 +101,13 @@ function TicketContent() {
                   void run(() => api(`registrations/${id}/sync`, {}))
                 }
               >
-                Проверить в сети
+                {t('Проверить в сети')}
               </Button>
             }
           />
           {error && (
             <p className="panel border-destructive mb-5" role="alert">
-              {error}
+              {message(error)}
             </p>
           )}
           <div className="grid gap-6 lg:grid-cols-2">
@@ -113,8 +119,9 @@ function TicketContent() {
                 </div>
                 {row.seat_state === 'Waitlisted' && (
                   <p>
-                    Вы в очереди. Когда место освободится, появится предложение
-                    на 10 минут. Залог пока не нужен.
+                    {t(
+                      'Вы в очереди. Когда место освободится, появится предложение на 10 минут. Залог пока не нужен.',
+                    )}
                   </p>
                 )}
                 {['Reserved', 'Offered', 'PaymentPending'].includes(
@@ -122,20 +129,24 @@ function TicketContent() {
                 ) && (
                   <>
                     <h2 className="text-xl font-semibold mb-3">
-                      Подтвердите место залогом
+                      {t('Подтвердите место залогом')}
                     </h2>
                     <p className="mb-5 text-muted-foreground">
                       {row.reserved_until &&
-                        `Резерв до ${date(row.reserved_until)}. `}
+                        t('Резерв до {0}. ', [date(row.reserved_until)])}
                       {row.seat_state === 'PaymentPending'
-                        ? 'Сначала проверьте предыдущую операцию в меню кошелька. Новый запрос использует тот же депозит.'
-                        : 'Условия показаны справа. Подпись потребуется в кошельке.'}
+                        ? t(
+                            'Сначала проверьте предыдущую операцию в меню кошелька. Новый запрос использует тот же депозит.',
+                          )
+                        : t(
+                            'Условия показаны справа. Подпись потребуется в кошельке.',
+                          )}
                     </p>
                     <Button
                       disabled={disabled || now >= p.bookingClose}
                       onClick={() => void act('deposit')}
                     >
-                      Внести залог
+                      {t('Внести залог')}
                     </Button>
                   </>
                 )}
@@ -144,11 +155,12 @@ function TicketContent() {
                   !row.cancelled && (
                     <>
                       <h2 className="text-xl font-semibold mb-3">
-                        Ваш билет готов
+                        {t('Ваш билет готов')}
                       </h2>
                       <p className="text-sm text-muted-foreground mb-5">
-                        Покажите свежий QR сотруднику. Код действует 2 минуты.
-                        Не передавайте его посторонним.
+                        {t(
+                          'Покажите свежий QR сотруднику. Код действует 2 минуты. Не передавайте его посторонним.',
+                        )}
                       </p>
                       {qr && Date.now() < new Date(expires).getTime() ? (
                         <div className="text-center">
@@ -156,15 +168,15 @@ function TicketContent() {
                             src={qr}
                             width={280}
                             height={280}
-                            alt="QR-код билета для сотрудника"
+                            alt={t('QR-код билета для сотрудника')}
                             className="mx-auto max-w-full"
                           />
                           <p className="text-xs text-muted-foreground mb-3">
-                            До {date(expires)}
+                            {t('До {0}', [date(expires)])}
                           </p>
                           <details className="my-4 text-left">
                             <summary className="cursor-pointer min-h-10 py-2 text-sm">
-                              Код для ручного ввода
+                              {t('Код для ручного ввода')}
                             </summary>
                             <code
                               data-testid="ticket-token"
@@ -176,22 +188,24 @@ function TicketContent() {
                         </div>
                       ) : (
                         qr && (
-                          <p className="mb-4">QR истёк. Получите новый код.</p>
+                          <p className="mb-4">
+                            {t('QR истёк. Получите новый код.')}
+                          </p>
                         )
                       )}
                       <Button
                         disabled={disabled || now >= p.checkinClose}
                         onClick={() => void getQr()}
                       >
-                        {qr ? 'Обновить QR' : 'Показать QR'}
+                        {qr ? t('Обновить QR') : t('Показать QR')}
                       </Button>
                     </>
                   )}
                 {row.deposit_state === 'Settled' && (
                   <p className="mt-5">
-                    Расчёт подтверждён сетью. Суммы и подпись перевода —{' '}
+                    {t('Расчёт подтверждён сетью. Суммы и подпись перевода —')}{' '}
                     <Link href="/ledger" className="link">
-                      в реестре
+                      {t('в реестре')}
                     </Link>
                     .
                   </p>
@@ -199,7 +213,7 @@ function TicketContent() {
                 {row.deposit_address && (
                   <details className="mt-6 text-xs">
                     <summary className="cursor-pointer min-h-10 py-2">
-                      Адрес депозита для резервного возврата
+                      {t('Адрес депозита для резервного возврата')}
                     </summary>
                     <code className="break-all">{row.deposit_address}</code>
                   </details>
@@ -216,7 +230,7 @@ function TicketContent() {
                           void run(() => api(`registrations/${id}/leave`, {}))
                         }
                       >
-                        Освободить место
+                        {t('Освободить место')}
                       </Button>
                     )}
                   {row.deposit_state === 'Funded' &&
@@ -227,8 +241,8 @@ function TicketContent() {
                         onClick={() => void act('cancel')}
                       >
                         {now < p.freeCancelUntil
-                          ? 'Отменить с возвратом'
-                          : 'Отменить участие'}
+                          ? t('Отменить с возвратом')
+                          : t('Отменить участие')}
                       </Button>
                     )}
                   {row.deposit_state &&
@@ -246,14 +260,15 @@ function TicketContent() {
                           void act(now >= p.hardRefundAt ? 'timeout' : 'settle')
                         }
                       >
-                        Получить расчёт
+                        {t('Получить расчёт')}
                       </Button>
                     )}
                 </div>
                 {row.late_cancel && (
                   <p className="mt-5 text-sm">
-                    Поздняя отмена освободила билет. Расчёт залога пройдёт по
-                    условиям неявки после окна спора.
+                    {t(
+                      'Поздняя отмена освободила билет. Расчёт залога пройдёт по условиям неявки после окна спора.',
+                    )}
                   </p>
                 )}
               </div>
@@ -283,13 +298,16 @@ function TicketContent() {
                       });
                     }}
                   >
-                    <h2 className="text-xl font-semibold">Оспорить неявку</h2>
+                    <h2 className="text-xl font-semibold">
+                      {t('Оспорить неявку')}
+                    </h2>
                     <p className="text-sm text-muted-foreground">
-                      Описание хранится приватно. Удержание останавливает именно
-                      подтверждённая транзакция спора, а не сохранение текста.
+                      {t(
+                        'Описание хранится приватно. Удержание останавливает именно подтверждённая транзакция спора, а не сохранение текста.',
+                      )}
                     </p>
                     <label className="field">
-                      Что произошло
+                      {t('Что произошло')}
                       <Textarea
                         required
                         minLength={10}
@@ -299,10 +317,10 @@ function TicketContent() {
                       />
                     </label>
                     <Button disabled={disabled}>
-                      Сохранить и открыть спор
+                      {t('Сохранить и открыть спор')}
                     </Button>
                     <label className="field text-sm">
-                      Доказательство · TXT, PNG, JPG или PDF, до 2 MiB
+                      {t('Доказательство · TXT, PNG, JPG или PDF, до 2 MiB')}
                       <input
                         type="file"
                         accept="text/plain,image/png,image/jpeg,application/pdf"

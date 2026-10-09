@@ -1,4 +1,6 @@
 'use client';
+import { useI18n } from '../../../../packages/i18n/react';
+
 import { useEffect, useRef, useState } from 'react';
 import jsQR from 'jsqr';
 import { Camera } from 'lucide-react';
@@ -15,6 +17,8 @@ export default function Checkin() {
   );
 }
 function Scanner() {
+  const { t, message } = useI18n();
+
   const app = useApp(),
     [event, setEvent] = useState(''),
     [token, setToken] = useState(''),
@@ -126,21 +130,23 @@ function Scanner() {
   return (
     <div className="page max-w-3xl mx-auto">
       <PageTitle
-        title="Проверка билета"
-        description="Выберите событие, отсканируйте QR и подтвердите вход."
+        title={t('Проверка билета')}
+        description={t('Выберите событие, отсканируйте QR и подтвердите вход.')}
       />
       <div className="panel stack">
         <label className="field">
-          Событие
+          {t('Событие')}
           <select
-            aria-label="Событие"
+            aria-label={t('Событие')}
             value={selected ?? ''}
             onChange={(e) => {
               setEvent(e.target.value);
               setResult(null);
             }}
           >
-            {!events.length && <option value="">Нет доступных событий</option>}
+            {!events.length && (
+              <option value="">{t('Нет доступных событий')}</option>
+            )}
             {events.map((e) => (
               <option value={e.id} key={e.id}>
                 {e.title}
@@ -152,7 +158,7 @@ function Scanner() {
           ref={video}
           muted
           playsInline
-          aria-label="Камера для сканирования QR"
+          aria-label={t('Камера для сканирования QR')}
           className={camera ? 'w-full rounded-lg' : 'hidden'}
         />
         <Button
@@ -161,7 +167,7 @@ function Scanner() {
           onClick={() => (camera ? stop() : void start())}
         >
           <Camera size={18} aria-hidden="true" />
-          {camera ? 'Остановить камеру' : 'Сканировать камерой'}
+          {camera ? t('Остановить камеру') : t('Сканировать камерой')}
         </Button>
         <form
           className="stack"
@@ -171,32 +177,33 @@ function Scanner() {
           }}
         >
           <label className="field">
-            Код билета
+            {t('Код билета')}
             <Input
               value={token}
               onChange={(e) => setToken(e.target.value)}
               required
               autoComplete="off"
               spellCheck={false}
-              placeholder="Код из QR или билета участника"
+              placeholder={t('Код из QR или билета участника')}
             />
           </label>
           <Button disabled={!selected || busy}>
-            {busy ? 'Проверяем…' : 'Подтвердить вход'}
+            {busy ? t('Проверяем…') : t('Подтвердить вход')}
           </Button>
         </form>
         {error && (
           <p role="alert" className="text-destructive">
-            {error}
+            {message(error)}
           </p>
         )}
         {result && (
           <div className="border-t pt-5">
             <p className="mb-3">
-              Отметка сохранена.{' '}
-              {remaining > 0
-                ? `Исправление доступно ещё ${remaining} с.`
-                : 'Окно исправления закрыто.'}
+              {t('Отметка сохранена. {0}', [
+                remaining > 0
+                  ? t('Исправление доступно ещё {0} с.', [remaining])
+                  : t('Окно исправления закрыто.'),
+              ])}
             </p>
             <Button
               variant="outline"
@@ -214,7 +221,7 @@ function Scanner() {
                 }
               }}
             >
-              Исправить ошибочный вход
+              {t('Исправить ошибочный вход')}
             </Button>
           </div>
         )}

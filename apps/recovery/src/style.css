@@ -89,3 +89,36 @@ dd {
 .confirm {
   border: 2px solid #292524;
 }
+
+/* Shared, keyboard-accessible language control. */
+.language-switcher {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid #d5d9df;
+  border-radius: 8px;
+  align-self: center;
+}
+.language-switcher button {
+  min-width: 40px;
+  min-height: 38px;
+  padding: 7px 9px;
+  margin: 0;
+  border: 0;
+  border-radius: 5px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: inherit;
+}
+.language-switcher button[aria-pressed='true'] {
+  background: #172033;
+  color: #fff;
+}
+.language-switcher button:focus-visible {
+  outline: 2px solid #596fe5;
+  outline-offset: 2px;
+}

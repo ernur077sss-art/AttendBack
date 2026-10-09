@@ -1,4 +1,6 @@
 'use client';
+import { useI18n } from '../../../../packages/i18n/react';
+
 import { useState } from 'react';
 import {
   AuthGate,
@@ -19,6 +21,8 @@ export default function Disputes() {
   );
 }
 function Content() {
+  const { t } = useI18n();
+
   const app = useApp(),
     [event, setEvent] = useState('');
   const events =
@@ -38,17 +42,21 @@ function Content() {
   return (
     <div className="page">
       <PageTitle
-        title="Кабинет арбитра"
-        description="Решение доступно только назначенному в условиях кошельку. Оно подтверждается транзакцией."
+        title={t('Кабинет арбитра')}
+        description={t(
+          'Решение доступно только назначенному в условиях кошельку. Оно подтверждается транзакцией.',
+        )}
       />
       <label className="field mb-6 max-w-xl">
-        Событие
+        {t('Событие')}
         <select
-          aria-label="Событие"
+          aria-label={t('Событие')}
           value={selected ?? ''}
           onChange={(e) => setEvent(e.target.value)}
         >
-          {!events.length && <option value="">Вы не назначены арбитром</option>}
+          {!events.length && (
+            <option value="">{t('Вы не назначены арбитром')}</option>
+          )}
           {events.map((e) => (
             <option key={e.id} value={e.id}>
               {e.title}
@@ -58,8 +66,8 @@ function Content() {
       </label>
       <LoadState {...r} retry={r.reload} />
       {!r.loading && !disputes.length && (
-        <Empty title="Нет обращений">
-          Новые споры появятся здесь после обращения участника.
+        <Empty title={t('Нет обращений')}>
+          {t('Новые споры появятся здесь после обращения участника.')}
         </Empty>
       )}
       <div className="stack">
@@ -77,6 +85,8 @@ function Dispute({
   row: Registration;
   refresh: () => Promise<void>;
 }) {
+  const { t } = useI18n();
+
   const app = useApp(),
     e = useResource<{ id: string; media_type: string; size: number }[]>(
       `disputes/${row.id}/evidence`,
@@ -98,7 +108,7 @@ function Dispute({
         <Status value={row.deposit_state} />
       </div>
       <p className="my-5 whitespace-pre-wrap">
-        {row.dispute_description ?? 'Описание не загружено.'}
+        {row.dispute_description ?? t('Описание не загружено.')}
       </p>
       <LoadState {...e} retry={e.reload} />
       <ul className="mb-5">
@@ -109,16 +119,22 @@ function Dispute({
               className="link inline-block py-2"
               download
             >
-              Материал {i + 1} · {file.media_type} ·{' '}
-              {Math.ceil(file.size / 1024)} KiB
+              {t('Материал {0} · {1} · {2} KiB', [
+                i + 1,
+                file.media_type,
+                Math.ceil(file.size / 1024),
+              ])}
             </a>
           </li>
         ))}
       </ul>
       {row.decision ? (
         <p>
-          Решение:{' '}
-          {row.decision === 'refund' ? 'вернуть залог' : 'применить удержание'}
+          {t('Решение: {0}', [
+            row.decision === 'refund'
+              ? t('вернуть залог')
+              : t('применить удержание'),
+          ])}
         </p>
       ) : (
         <div className="flex flex-wrap gap-3">
@@ -126,14 +142,14 @@ function Dispute({
             disabled={app.busy || row.deposit_state !== 'Disputed'}
             onClick={() => void resolve('resolve_refund')}
           >
-            Вернуть залог
+            {t('Вернуть залог')}
           </Button>
           <Button
             variant="outline"
             disabled={app.busy || row.deposit_state !== 'Disputed'}
             onClick={() => void resolve('resolve_forfeit')}
           >
-            Применить удержание {row.policy.penaltyBps / 100}%
+            {t('Применить удержание {0}%', [row.policy.penaltyBps / 100])}
           </Button>
         </div>
       )}

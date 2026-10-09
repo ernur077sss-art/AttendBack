@@ -1,28 +1,31 @@
 'use client';
+import { useI18n } from '../../../../packages/i18n/react';
+
 import Link from 'next/link';
 import { useApp } from '../../components/providers';
 import { AuthGate, PageTitle, Empty, Status } from '../../components/common';
 import { Button } from '../../components/ui/button';
-import { date } from '../../lib/api';
 import { displayAmount } from '../../../../packages/domain/src';
 export default function Tickets() {
+  const { t, date, message } = useI18n();
+
   const app = useApp();
   return (
     <AuthGate>
       <div className="page">
         <PageTitle
-          title="Мои билеты"
-          description="Место, вход и залог — каждый статус отдельно."
+          title={t('Мои билеты')}
+          description={t('Место, вход и залог — каждый статус отдельно.')}
           action={
             <Button variant="outline" onClick={() => void app.refresh()}>
-              Обновить
+              {t('Обновить')}
             </Button>
           }
         />
         {!app.me?.registrations.length && (
-          <Empty title="Вы ещё не выбрали событие">
+          <Empty title={t('Вы ещё не выбрали событие')}>
             <Link href="/" className="link">
-              Посмотреть события
+              {t('Посмотреть события')}
             </Link>
           </Empty>
         )}
@@ -42,9 +45,11 @@ export default function Tickets() {
                 {date(r.policy.checkinOpen)} · {r.location}
               </p>
               <div className="flex justify-between gap-3 border-t pt-4">
-                <span>{displayAmount(r.policy.amount)} USDC · тест</span>
+                <span>
+                  {t('{0} USDC · тест', [displayAmount(r.policy.amount)])}
+                </span>
                 <Link href={`/tickets/${r.id}`} className="link">
-                  Открыть билет
+                  {t('Открыть билет')}
                 </Link>
               </div>
             </article>
@@ -52,11 +57,11 @@ export default function Tickets() {
         </div>
         {!!app.me?.notifications.length && (
           <section className="mt-10">
-            <h2 className="text-xl font-semibold mb-4">Уведомления</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('Уведомления')}</h2>
             <div className="panel divide-y">
               {app.me.notifications.map((n) => (
                 <div key={n.id} className="py-3">
-                  <p>{n.message}</p>
+                  <p>{message(n.message)}</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {date(n.created_at)}
                   </p>

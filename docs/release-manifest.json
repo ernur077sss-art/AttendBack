@@ -67,13 +67,13 @@
     "Additional public devnet dispute/no-show scenarios"
   ],
   "webDeployment": {
-    "id": "dpl_E2UFS9pwXus22ejPtVxDEN6HYPim",
-    "sourceCommit": "d84d0e329e187a4f8f59f24c1725965ba92b9676",
+    "id": "dpl_4entKDKg3R6t54ud2CAaSeDJDCqx",
+    "sourceCommit": "1c27433c3e63ed61f5c5847fa77e9fb1fb62dcee",
     "status": "READY"
   },
   "signerDeployment": {
-    "id": "dpl_yvj8HQmbJeqquwGcHxXQxpHkpJJ4",
-    "sourceCommit": "5e2aafacd7665cbcd5172f174cdbe99bd105b31d",
+    "id": "dpl_4dKNiDW9WBA8kQQgHfE7AcF6znwr",
+    "sourceCommit": "1c27433c3e63ed61f5c5847fa77e9fb1fb62dcee",
     "status": "READY"
   },
   "finalizedTransactions": [
@@ -107,13 +107,13 @@
     "wrongOrigin": 403
   },
   "ci": {
-    "sourceCommit": "d84d0e329e187a4f8f59f24c1725965ba92b9676",
+    "sourceCommit": "1c27433c3e63ed61f5c5847fa77e9fb1fb62dcee",
     "status": "success",
-    "url": "https://github.com/ernur077sss-art/AttendBack/actions/runs/37904855966"
+    "url": "https://github.com/ernur077sss-art/AttendBack/actions/runs/37915039793"
   },
   "recoveryDeployment": {
-    "id": "dpl_8kLvtE24CntceiDFATXFLvqfQEK9",
-    "sourceCommit": "d84d0e329e187a4f8f59f24c1725965ba92b9676",
+    "id": "dpl_DmK5fBmXBo5adVe2cz3Zkq9Uy59L",
+    "sourceCommit": "1c27433c3e63ed61f5c5847fa77e9fb1fb62dcee",
     "status": "READY"
   },
   "interfaceLanguages": {
@@ -134,5 +134,35 @@
       "English recovery rendered",
       "API health 200, database true, devnet"
     ]
+  },
+  "auditRelease": {
+    "verifiedAt": "2026-10-09T10:09:07.625904+00:00",
+    "sourceCommit": "1c27433c3e63ed61f5c5847fa77e9fb1fb62dcee",
+    "report": "docs/plan-audit-2026-10-09.ru.md",
+    "localChecks": {
+      "unitProgramSignerTests": 52,
+      "databaseRpcTests": 19,
+      "browserTests": 12,
+      "workflowOnlyRefundTests": 1,
+      "restoredTables": 17,
+      "productionDependencyAdvisories": 0,
+      "builds": ["web", "recovery", "signer", "Solana SBF"],
+      "codegenMatches": true
+    },
+    "publicChecks": [
+      "All three deployments READY",
+      "Main and demo RU/EN return HTTP 200",
+      "Health HTTP 200, database true, devnet",
+      "Protected me/cron and unauthenticated signer return 401",
+      "Authorized signer health returns 200",
+      "RU/EN demo preserves step and shows sample refund",
+      "375px mobile and 1280px desktop do not overflow",
+      "No JavaScript errors captured in the inspected demo tab",
+      "Program executable and four prior release transactions finalized, rechecked 2026-10-09T10:08:39.971Z"
+    ],
+    "programChanged": false,
+    "migrationsChanged": false,
+    "newMonetaryCloudSmoke": false,
+    "githubDeploymentId": 6958188757
   }
 }

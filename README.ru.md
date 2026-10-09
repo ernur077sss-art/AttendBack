@@ -1,17 +1,17 @@
 # AttendBack — Приходите. Залог вернётся.
 
 [![CI](https://github.com/ernur077sss-art/AttendBack/actions/workflows/check.yml/badge.svg?branch=main)](https://github.com/ernur077sss-art/AttendBack/actions/workflows/check.yml)
-[![Solana](https://img.shields.io/badge/Solana-localnet-9945FF)](docs/architecture.ru.md)
-[![Статус](https://img.shields.io/badge/Status-local_MVP-14F195)](docs/progress.ru.md)
+[![Solana](https://img.shields.io/badge/Solana-devnet-9945FF)](docs/architecture.ru.md)
+[![Статус](https://img.shields.io/badge/Status-devnet_beta-14F195)](docs/progress.ru.md)
 [![Colosseum](https://img.shields.io/badge/Colosseum-Kazakhstan_track-14F195)](https://superteam.fun/earn/listing/colosseum-crypto-worlds-fair-hackathon-superteam-kazakhstan-track)
 
 > Возвратные залоги за посещение мероприятий на Solana. Гость бронирует место, проходит по QR-билету и получает залог обратно по правилам, опубликованным до оплаты.
 
 [English](README.md) · [Сценарий демо](docs/demo.ru.md) · [Архитектура](docs/architecture.ru.md) · [План разработки](hackathon-product-plan/development-plan.ru.md) · [Статус релиза](docs/progress.ru.md)
 
-**Текущая версия:** рабочий локальный MVP с тестовыми токенами. Публичное размещение в devnet, доступное по ссылке приложение и итоговый видеоролик ещё готовятся.
+**Текущая версия:** [публичная devnet-бета](https://attendback-three.vercel.app) на Vercel Hobby + Neon Free. Через облачный API подтверждены публикация, залог 1 тестового USDC, вход по QR-токену и автоматический finalized-возврат. Проверки обычного кошелька и физического телефона, итоговое видео и заявка ещё предстоят.
 
-[Страница резервного возврата](https://attendback-recovery.vercel.app) уже опубликована. Полное размещение на Vercel Hobby + Neon Free продолжается; [настройка и фактический статус](docs/free-hosting.ru.md).
+[Страница резервного возврата](https://attendback-recovery.vercel.app) уже опубликована. Основной сайт/API, отдельный signer, БД и Workflow опубликованы; [настройка и фактический статус](docs/free-hosting.ru.md).
 
 ---
 
@@ -78,7 +78,7 @@ AttendBack подходит организаторам конференций, �
 - Приватные доказательства, кабинет арбитра и фиксированные сроки споров.
 - Журнал check-in с авторами, временем и версиями исправлений.
 - Worker расчётов: повторные попытки, сверка транзакций и уведомления внутри приложения.
-- Отдельное приложение возврата и изолированный сервис подписи для будущего devnet-релиза.
+- Отдельное приложение возврата и изолированный сервис подписи опубликованы для devnet.
 
 ---
 
@@ -219,7 +219,8 @@ pnpm test:e2e
 - [ ] Этап 7: проверка камеры физического телефона по публичному HTTPS.
 - [x] Этап 8: локальные автотесты, исправления регрессий и восстановление БД.
 - [x] Подготовка этапа 9: конфигурация релиза, signer, манифест и сценарий демо.
-- [ ] Этап 9: размещение в devnet, публикация сервисов и проверка обычного кошелька.
+- [x] Этап 9: размещение в devnet, публикация сервисов и автоматический возврат через облачный API.
+- [ ] Этап 9: обычный кошелёк, физический телефон и публичный резервный возврат.
 - [ ] Публикация итогового видео и отправка заявки на хакатон.
 
 Полный roadmap: [утверждённый план разработки](hackathon-product-plan/development-plan.ru.md). Текущая версия не поддерживает mainnet и реальные средства. Карты/тенге, SSO, внешние системы регистрации и email/SMS не входят в этот MVP.
@@ -237,7 +238,7 @@ pnpm test:e2e
 - [Особенности окружения](docs/runtime-notes.ru.md)
 - [GitHub Actions](https://github.com/ernur077sss-art/AttendBack/actions/workflows/check.yml)
 
-Техническая документация и текущий интерфейс преимущественно на русском языке. Ссылки на публичное приложение, презентацию и видео появятся после публикации этих материалов.
+Техническая документация и текущий интерфейс преимущественно на русском языке. Ссылка на публичное приложение находится выше; презентация и видео ещё готовятся.
 
 ---
 

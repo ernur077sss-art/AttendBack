@@ -1,17 +1,17 @@
 # AttendBack — Show up. Get your deposit back.
 
 [![CI](https://github.com/ernur077sss-art/AttendBack/actions/workflows/check.yml/badge.svg?branch=main)](https://github.com/ernur077sss-art/AttendBack/actions/workflows/check.yml)
-[![Solana](https://img.shields.io/badge/Solana-localnet-9945FF)](docs/architecture.ru.md)
-[![Status](https://img.shields.io/badge/Status-local_MVP-14F195)](docs/progress.ru.md)
+[![Solana](https://img.shields.io/badge/Solana-devnet-9945FF)](docs/architecture.ru.md)
+[![Status](https://img.shields.io/badge/Status-devnet_beta-14F195)](docs/progress.ru.md)
 [![Colosseum](https://img.shields.io/badge/Colosseum-Kazakhstan_track-14F195)](https://superteam.fun/earn/listing/colosseum-crypto-worlds-fair-hackathon-superteam-kazakhstan-track)
 
 > Refundable attendance deposits for events on Solana. Guests reserve a seat, check in with a QR ticket, and receive their deposit back under rules published before payment.
 
 [Русский](README.ru.md) · [Demo walkthrough](docs/demo.ru.md) · [Architecture](docs/architecture.ru.md) · [Development plan](hackathon-product-plan/development-plan.ru.md) · [Release status](docs/progress.ru.md)
 
-**Current release:** working localnet MVP with test tokens. Public devnet deployment, a hosted demo, and the final submission video are still pending.
+**Current release:** [public devnet beta](https://attendback-three.vercel.app), hosted on Vercel Hobby + Neon Free. An actual hosted API flow has verified publication, a 1 test-USDC deposit, QR-token check-in, and a finalized automatic refund. Regular-wallet and physical-phone checks, the final video, and submission remain pending.
 
-The [recovery client](https://attendback-recovery.vercel.app) is live. Full hosting on Vercel Hobby + Neon Free is in progress; see [deployment status and setup](docs/free-hosting.ru.md).
+The [recovery client](https://attendback-recovery.vercel.app) is live. The web/API, isolated signer, database, and durable Workflow are deployed; see [deployment status and setup](docs/free-hosting.ru.md).
 
 ---
 
@@ -78,7 +78,7 @@ The chain enforces payment rules. Staff still attest physical attendance, the re
 - Private dispute evidence, a resolver workspace, and fixed dispute windows.
 - Check-in history with authors, timestamps, and correction revisions.
 - Settlement worker with retries, transaction reconciliation, and in-app notifications.
-- A separate recovery application and an isolated signer service for the planned devnet release.
+- A separate recovery application and an isolated signer service deployed for devnet.
 
 ---
 
@@ -219,7 +219,8 @@ Tests use a separate `_test` database; browser tests start their own web applica
 - [ ] Stage 7: verify a physical phone camera over public HTTPS.
 - [x] Stage 8: local automated tests, regression fixes, and database restoration.
 - [x] Stage 9 preparation: release configuration, signer, manifest, and demo script.
-- [ ] Stage 9: deploy to devnet, host the services, and verify a regular wallet.
+- [x] Stage 9: deploy to devnet, host the services, and verify an automatic refund through the hosted API.
+- [ ] Stage 9: verify a regular wallet, physical phone, and the public recovery flow.
 - [ ] Publish the final demo video and submit the hackathon application.
 
 Full roadmap: [approved development plan](hackathon-product-plan/development-plan.ru.md). The current release does not support mainnet or real funds. Card/tenge payments, SSO, external registration integrations, and email/SMS are outside this MVP.
@@ -237,7 +238,7 @@ Full roadmap: [approved development plan](hackathon-product-plan/development-pla
 - [Runtime notes](docs/runtime-notes.ru.md)
 - [GitHub Actions](https://github.com/ernur077sss-art/AttendBack/actions/workflows/check.yml)
 
-Technical documents and the current application UI are primarily in Russian. Public demo, presentation, and video links will be added when those materials are published.
+Technical documents and the current application UI are primarily in Russian. The public demo is linked above; presentation and video are still pending.
 
 ---
 

@@ -11,7 +11,7 @@
   "mint": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
   "mintDecimals": 6,
   "mintOwner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-  "deployment": "not_performed",
+  "deployment": "deployed",
   "programMaxLengthBytes": 265152,
   "rentEstimateLamports": {
     "programAccount": "833120",
@@ -22,12 +22,93 @@
   },
   "initialFundingTargetLamports": "2000000000",
   "rentNotes": "Read-only estimate for a new deployment with --max-len equal to programMaxLengthBytes. Agave 4.3.0 funds the buffer with the ProgramData rent, then the loader returns those lamports to the payer before creating ProgramData. Do not add buffer rent a second time. Transaction fees, retries, service funding and future program growth are additional; the funding target is a reserve, not a measured deployment cost. Test SOL only.",
-  "feePayer": null,
-  "upgradeAuthority": null,
-  "bookingAuthority": null,
-  "attester": null,
-  "workerPayer": null,
-  "webUrl": null,
-  "recoveryUrl": null,
-  "hostingCost": "not_selected"
+  "feePayer": "J5kbjJauYkCTLsBv8toEhttJbpvrL2Bd9mnQrx7qcWMC",
+  "upgradeAuthority": "2hPC19aogQ7SVaCHzUrvdsrJ7iDnZL9SbemRdFw8gKJa",
+  "bookingAuthority": "EAwFrDep8dVgAavsh87YgDs6TUheqxzVosSnxdeNEXSm",
+  "attester": "5Qavtkj2vSTsZKrMnhRzV4SpvFUa2rzgoEp9Q5FkVfnE",
+  "workerPayer": "GVjStoYqM4canERYfBDjCSa9osgG19G43sepeGFEx2G7",
+  "webUrl": "https://attendback-three.vercel.app",
+  "recoveryUrl": "https://attendback-recovery.vercel.app",
+  "hostingCost": "Vercel Hobby + Neon Free; no paid plan activated",
+  "verifiedAt": "2026-10-09T07:57:53.309Z",
+  "deploymentSignature": "2aqGBKvNvxpsbEjPqEzXnG7FrKNrSUbcALMmbUn9RajYm6PG63TD3uAuN7WQB7QMRXez2wfp6EnyR45QKym25xmg",
+  "programdataAddress": "3dHhws1PLCuA6wGeg9cGE75ozmrvK8awYVqrLaaWFh1x",
+  "lastDeploySlot": 509101163,
+  "deployedBinarySha256": "21cf0effb8b753844870b052f76f15d05d003226bd1675990a26fa05465925fc",
+  "database": {
+    "provider": "Neon Free",
+    "resource": "neon-coquelicot-ridge",
+    "migrationCount": 7,
+    "tableCount": 17,
+    "immutablePolicyTrigger": true
+  },
+  "cloudSmoke": {
+    "eventId": "42c1ac80-d1de-46db-bf15-c4925d774786",
+    "registrationId": "4efa71ae-fd78-48ef-97c9-c1db2b3137eb",
+    "organizer": "ASsUX49ghZJrg1P7Bu326jBtMvaCrBK35XctAd8Fy8Jv",
+    "guest": "DWRFjQ3ExQMNZGPzPYgZkUAZyNYwtARbs5hhAWtnmvtR",
+    "publicationSignature": "2S7HXrY2jouoYm7jhp5WuvLFmJuMfNHJgwRKkBfeSURPaSYV2mQsW7jVT9XmgsafMiDSYpzXE2QDj4czVtg8PhLR",
+    "depositSignature": "3o5jugZCd3xgfcdFYeLGZ3qUWZwCtZXMgQg1BUswpsFJbb1rCLN5qhMdEDEZckQbNpdMVB68mgdg2MyWLQLtbqWP",
+    "settlementSignature": "3BH1NYnYx6ryz59wLtWYc27YYSeujqRKdEse2Z4pj7mWdRjLvnH5Hy4PgrPdvzi9ucSrAdLHD4ABQaLuzUS6zyh2",
+    "settlementSlot": "509106303",
+    "refundBaseUnits": "1000000",
+    "penaltyBaseUnits": "0",
+    "finalizedAt": "2026-10-09T07:40:43.884Z",
+    "seatState": "Active",
+    "depositState": "Settled",
+    "tokenBalanceBeforeBaseUnits": "2000000",
+    "tokenBalanceAfterBaseUnits": "2000000",
+    "client": "Generated local test keypairs through hosted HTTPS API, v0; not an extension-wallet or physical-camera test"
+  },
+  "remainingVerification": [
+    "Regular Wallet Standard wallet",
+    "Physical phone camera over HTTPS",
+    "Cloud recovery-client refund",
+    "Additional public devnet dispute/no-show scenarios"
+  ],
+  "webDeployment": {
+    "id": "dpl_UmD1Jz1Tb96pKReMsiTLEvfqg5y1",
+    "sourceCommit": "849cfb6124b3cf3856d5a8c372e989507418f196",
+    "status": "READY"
+  },
+  "signerDeployment": {
+    "id": "dpl_yvj8HQmbJeqquwGcHxXQxpHkpJJ4",
+    "sourceCommit": "5e2aafacd7665cbcd5172f174cdbe99bd105b31d",
+    "status": "READY"
+  },
+  "finalizedTransactions": [
+    {
+      "signature": "2aqGBKvNvxpsbEjPqEzXnG7FrKNrSUbcALMmbUn9RajYm6PG63TD3uAuN7WQB7QMRXez2wfp6EnyR45QKym25xmg",
+      "slot": "509101163",
+      "error": null
+    },
+    {
+      "signature": "2S7HXrY2jouoYm7jhp5WuvLFmJuMfNHJgwRKkBfeSURPaSYV2mQsW7jVT9XmgsafMiDSYpzXE2QDj4czVtg8PhLR",
+      "slot": "509105121",
+      "error": null
+    },
+    {
+      "signature": "3o5jugZCd3xgfcdFYeLGZ3qUWZwCtZXMgQg1BUswpsFJbb1rCLN5qhMdEDEZckQbNpdMVB68mgdg2MyWLQLtbqWP",
+      "slot": "509105870",
+      "error": null
+    },
+    {
+      "signature": "3BH1NYnYx6ryz59wLtWYc27YYSeujqRKdEse2Z4pj7mWdRjLvnH5Hy4PgrPdvzi9ucSrAdLHD4ABQaLuzUS6zyh2",
+      "slot": "509106303",
+      "error": null
+    }
+  ],
+  "httpVerification": {
+    "health": 200,
+    "database": true,
+    "cluster": "devnet",
+    "unauthenticatedMe": 401,
+    "unauthenticatedCron": 401,
+    "wrongOrigin": 403
+  },
+  "ci": {
+    "sourceCommit": "849cfb6124b3cf3856d5a8c372e989507418f196",
+    "status": "success",
+    "url": "https://github.com/ernur077sss-art/AttendBack/actions/runs/37900390698"
+  }
 }

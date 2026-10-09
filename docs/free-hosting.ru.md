@@ -4,11 +4,13 @@
 
 ## Компоненты
 
-- `attendback`: Next.js, API и Vercel Workflow; Root Directory `apps/web`, регион `iad1`.
-- `attendback-signer`: отдельный Next.js-проект только для подписей; Root Directory `apps/signer`, регион `iad1`. Production deployment `dpl_yvj8HQmbJeqquwGcHxXQxpHkpJJ4` из коммита `5e2aafa` получил READY. HTTPS `/api/sign` и `/api/health` без токена возвращают 401; авторизованный health пока возвращает 503, так как программа в devnet ещё не выпущена. Полноценное подписание в облаке пока не проверено.
-- [attendback-recovery](https://attendback-recovery.vercel.app): опубликованная независимая страница возврата, по умолчанию devnet на публичном домене.
-- `neon-coquelicot-ridge`: Neon Free, Washington/`iad1`, подключена к проекту web. При проверке в облачной `public` было 0 таблиц; миграции пока не выполнены.
-- Программа `6CUM27mNoskjKnCsoywCQz4puZfhpXj5DJWEDZJuiwuV` пока не опубликована в devnet. Для текущего бинарника планируем 2 бесплатных тестовых SOL на deployer `J5kbjJauYkCTLsBv8toEhttJbpvrL2Bd9mnQrx7qcWMC`: около 1,349 SOL на аккаунты программы, остальное — резерв на комиссии и сервисного плательщика. Выделяем память по размеру бинарника (`--max-len 265152`); увеличение при будущих обновлениях потребует дополнительных SOL. Прежняя оценка 5 SOL была завышена: rent буфера нельзя повторно прибавлять к ProgramData. [Расчёт](devnet-release.ru.md#стоимость-и-недостающие-параметры).
+- [attendback-three.vercel.app](https://attendback-three.vercel.app): Next.js, API и Vercel Workflow; Root Directory `apps/web`. Это публичный production-домен. `attendback-ernur1.vercel.app` защищён Vercel Authentication, а `attendback.vercel.app` принадлежит другому проекту. `APP_ORIGIN` совпадает с публичным адресом.
+- `attendback-signer`: отдельный опубликованный Next.js-проект для подписей; Root Directory `apps/signer`, Node 24, Fluid, `iad1`. Health с токеном — 200, без токена — 401. В облачном сценарии реально подписывали booking, attester и payer.
+- [attendback-recovery](https://attendback-recovery.vercel.app): опубликованная независимая страница возврата, публичный режим devnet.
+- `neon-coquelicot-ridge`: Neon Free, Washington/`iad1`, подключена к web. 9 октября с явного разрешения применены все 7 миграций; 17 таблиц и immutable-policy trigger подтверждены.
+- Программа `6CUM27mNoskjKnCsoywCQz4puZfhpXj5DJWEDZJuiwuV` опубликована в devnet. Deployer получил 10 тестовых SOL. Выделена память ровно под 265152 байта; account rent около 1,349 SOL плюс комиссии. Сервисный payer получил 0,2 тестового SOL. Ключ upgrade authority сохранён отдельно; бинарник выгружен из сети и сверен по SHA-256.
+
+Подписи и пределы выполненной проверки: [протокол релиза](deployment-2026-10-09.ru.md).
 
 ## Очередь без постоянного сервера
 
@@ -38,6 +40,6 @@ Web получает тот же токен и только публичные �
 
 Прошли TypeScript, сборки web/Workflow и signer, 46 модульных/программных/signer-тестов, три новых PostgreSQL-теста расписания, включая сохранение пробуждений для депозитов, не попавших в первый пакет. Сквозной браузерный сценарий «залог → QR → finalized-возврат» прошёл без отдельного worker (1/1, 1,5 минуты со стартом стенда).
 
-Остаются миграции облачной БД, тестовые SOL и публикация программы, проверка облачного signer, основной web-deployment и полный сценарий с обычным кошельком и физическим телефоном. Работоспособность страницы recovery не подтверждает выпуск программы или основной системы.
+Облачный сценарий через HTTPS API прошёл: публикация → залог 1 тестового USDC → QR-токен → автоматический finalized-возврат, билет Active. Остаются обычный кошелёк, физическая камера телефона, публичный recovery-сценарий и дополнительные devnet-проверки неявок/споров. Они не заменяются автоматизированной проверкой API.
 
 Источники: [Vercel Hobby](https://vercel.com/docs/plans/hobby), [Workflow pricing](https://vercel.com/docs/workflows/pricing), [Queues pricing](https://vercel.com/docs/queues/pricing), [получение devnet SOL](https://solana.com/developers/cookbook/development/airdrops-and-faucets).

@@ -5,6 +5,16 @@ import { createSolanaRpc, address } from '@solana/kit';
 import { fetchMint, TOKEN_PROGRAM_ADDRESS } from '@solana-program/token';
 import { PROGRAM_ADDRESS } from '../packages/chain-client/src';
 async function main() {
+  const existing = await readFile('docs/release-manifest.json', 'utf8').catch(
+    (error: NodeJS.ErrnoException) => {
+      if (error.code === 'ENOENT') return null;
+      throw error;
+    },
+  );
+  if (existing && JSON.parse(existing).deployment === 'deployed')
+    throw new Error(
+      'Refusing to overwrite verified deployment evidence. Archive the release manifest before preparing a new release.',
+    );
   const binary = await readFile('target/deploy/attendback.so'),
     idl = await readFile('idl/attendback.json');
   if (JSON.parse(idl.toString()).address !== PROGRAM_ADDRESS)

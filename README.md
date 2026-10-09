@@ -1,11 +1,16 @@
 # AttendBack — Show up. Get your deposit back.
 
 [![CI](https://github.com/ernur077sss-art/AttendBack/actions/workflows/check.yml/badge.svg?branch=main)](https://github.com/ernur077sss-art/AttendBack/actions/workflows/check.yml)
+[![Vercel deployment](https://img.shields.io/badge/Vercel-Live%20Demo-000000?logo=vercel&logoColor=white)](https://attendback-three.vercel.app/?lang=en)
 [![Solana](https://img.shields.io/badge/Solana-devnet-9945FF)](docs/architecture.ru.md)
 [![Status](https://img.shields.io/badge/Status-devnet_beta-14F195)](docs/progress.ru.md)
 [![Colosseum](https://img.shields.io/badge/Colosseum-Kazakhstan_track-14F195)](https://superteam.fun/earn/listing/colosseum-crypto-worlds-fair-hackathon-superteam-kazakhstan-track)
 
 > Refundable attendance deposits for events on Solana. Guests reserve a seat, check in with a QR ticket, and receive their deposit back under rules published before payment.
+
+**Live demo on Vercel: [Open AttendBack ↗](https://attendback-three.vercel.app/?lang=en)**
+
+[Vercel dashboard](https://vercel.com/ernur1) (requires access to the owner's Vercel account).
 
 [Русский](README.ru.md) · [Demo walkthrough](docs/demo.ru.md) · [Architecture](docs/architecture.ru.md) · [Development plan](hackathon-product-plan/development-plan.ru.md) · [Release status](docs/progress.ru.md)
 

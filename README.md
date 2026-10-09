@@ -198,7 +198,7 @@ Open [localhost:4173](http://127.0.0.1:4173), enter the RPC URL and the deposit 
 
 ## Tests and Verification
 
-The last recorded local audit passed **30 unit/program/signer tests, 16 PostgreSQL/RPC tests, and 7 browser scenarios**, plus both production builds and restoration of all 17 database tables. See the [audit](docs/plan-audit.ru.md) and [progress log](docs/progress.ru.md). The CI badge above reports the actual GitHub workflow state.
+The bilingual release passed **52 automated tests and 10 browser scenarios**, plus TypeScript checks and both production builds. [GitHub CI for the deployed code](https://github.com/ernur077sss-art/AttendBack/actions/runs/37904855966) also passed the program build and PostgreSQL/RPC checks. Earlier database restoration checks are recorded in the [audit](docs/plan-audit.ru.md); current results are in the [progress log](docs/progress.ru.md).
 
 With PostgreSQL and localnet running:
 
@@ -243,7 +243,7 @@ Full roadmap: [approved development plan](hackathon-product-plan/development-pla
 - [Runtime notes](docs/runtime-notes.ru.md)
 - [GitHub Actions](https://github.com/ernur077sss-art/AttendBack/actions/workflows/check.yml)
 
-Technical documents and the current application UI are primarily in Russian. The public demo is linked above; presentation and video are still pending.
+Technical documents are primarily in Russian. The application and recovery client support **Russian and English**, with a persistent **RU / EN** selector. The public demo is linked above; presentation and video are still pending.
 
 ---
 

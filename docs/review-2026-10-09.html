@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>AttendBack — проверка плана</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: system-ui, sans-serif;
+        color: #20241f;
+        background: #f7f6f2;
+      }
+      body {
+        margin: 0;
+      }
+      main {
+        max-width: 1024px;
+        margin: auto;
+        padding: 48px 24px;
+      }
+      a {
+        color: #174d35;
+      }
+      h1 {
+        font-size: clamp(30px, 5vw, 52px);
+        line-height: 1.1;
+        letter-spacing: -0.035em;
+      }
+      h2 {
+        margin-top: 40px;
+        font-size: 24px;
+      }
+      p,
+      li,
+      td {
+        line-height: 1.7;
+      }
+      .muted {
+        color: #5c655f;
+      }
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+      }
+      .metric {
+        background: white;
+        border: 1px solid #d8ddd7;
+        padding: 20px;
+        border-radius: 12px;
+      }
+      .metric strong {
+        display: block;
+        font-size: 30px;
+      }
+      .status {
+        padding: 20px;
+        border-left: 4px solid #a06a18;
+        background: #fff8e9;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 15px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 14px 12px;
+        border-bottom: 1px solid #d8ddd7;
+        vertical-align: top;
+      }
+      .scroll {
+        overflow: auto;
+      }
+      footer {
+        border-top: 1px solid #d8ddd7;
+        margin-top: 40px;
+        padding-top: 20px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="muted">AttendBack · внутреннее ревью · 9 октября 2026</p>
+      <h1>Рабочая devnet-бета.<br />План ещё не закрыт целиком.</h1>
+      <p>
+        Проверка реализации, интерфейсов, зависимостей и публикации по девяти
+        согласованным этапам.
+        <a href="plan-audit-2026-10-09.ru.md">Полный отчёт с доказательствами</a
+        >.
+      </p>
+      <div class="metrics">
+        <div class="metric"><strong>B</strong>Безопасность прототипа</div>
+        <div class="metric"><strong>B</strong>Качество реализации</div>
+        <div class="metric"><strong>0</strong>Advisory после обновления</div>
+        <div class="metric">
+          <strong>Не готов</strong>Запуск с реальными средствами
+        </div>
+      </div>
+      <p class="muted">
+        Оценки — внутренняя шкала ревью, не сертификация и не независимый аудит.
+        Нулевой результат dependency audit не доказывает отсутствие всех
+        уязвимостей.
+      </p>
+      <h2>Найдено и исправлено</h2>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Находка</th>
+              <th>Исправление</th>
+              <th>Проверка</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                8 уведомлений об уязвимостях транзитивных библиотек Workflow
+              </td>
+              <td>
+                nanoid 5.1.16 и devalue 5.9.3; версии закреплены в lockfile
+              </td>
+              <td>Production audit: 0 advisory; повторные сборки и тесты</td>
+            </tr>
+            <tr>
+              <td>
+                Главная не содержала запланированные демо и образец правил
+              </td>
+              <td>
+                Пример билета, три шага, условия удержания, двуязычный учебный
+                обзор
+              </td>
+              <td>
+                Браузер: язык, клавиатура, адаптивность, отсутствие платежей в
+                обзоре
+              </td>
+            </tr>
+            <tr>
+              <td>Повторная загрузка не показывала ожидание</td>
+              <td>Состояние loading устанавливается при каждом запросе</td>
+              <td>
+                Ошибку каталога можно повторить; ознакомление остаётся доступным
+              </td>
+            </tr>
+            <tr>
+              <td>
+                Старые документы сообщали об отсутствии уже выполненного
+                размещения
+              </td>
+              <td>Исторические результаты отделены от текущего статуса</td>
+              <td>Адреса и версии сопоставлены с манифестом</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h2>Что подтверждено</h2>
+      <p>
+        Программа Solana, роли, депозит, возврат, поздняя отмена, споры и
+        защитный срок реализованы. Проверены локальные денежные сценарии,
+        повторы, гонки и восстановление 17 таблиц. Ранее проведён облачный
+        API-сценарий с реальным finalized-возвратом 1 тестового USDC. Сайт,
+        signer и recovery опубликованы; Vercel Hobby и Neon Free.
+      </p>
+      <p>
+        Точные результаты итоговых прогонов:
+        <a href="progress.ru.md">журнал</a>. Адреса, подписи и версии:
+        <a href="release-manifest.json">манифест</a>.
+      </p>
+      <h2>Открытые критерии</h2>
+      <div class="status">
+        <ol>
+          <li>Обычный кошелёк и камера физического телефона по HTTPS.</li>
+          <li>
+            Реальная транзакция через опубликованный recovery; дополнительные
+            публичные сценарии неявки и спора.
+          </li>
+          <li>
+            Видео рабочего продукта до 3 минут, отдельный питч до 2 минут и
+            подтверждённая отправка заявки.
+          </li>
+        </ol>
+      </div>
+      <p>
+        Сотрудник подтверждает вход, resolver решает спор, upgrade authority
+        управляет обновлением программы. Эти границы доверия документированы.
+        Бесплатные тарифы имеют квоты; нагрузочная готовность коммерческого
+        сервиса не заявляется.
+      </p>
+      <footer>
+        <a href="https://attendback-three.vercel.app/?lang=ru"
+          >Открыть приложение</a
+        >
+        ·
+        <a href="https://attendback-three.vercel.app/demo?lang=ru"
+          >Учебный обзор без платежей</a
+        >
+        ·
+        <a href="../hackathon-product-plan/development-plan.ru.md"
+          >Утверждённый план</a
+        >
+      </footer>
+    </main>
+  </body>
+</html>

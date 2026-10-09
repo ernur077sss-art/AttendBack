@@ -18,3 +18,8 @@ allowBuilds:
   '@embedded-postgres/windows-x64': false
 minimumReleaseAgeExclude:
   - '@solana/kit-plugin-wallet@0.21.0'
+
+# Patched transitive Workflow dependencies; stay within their existing major versions.
+overrides:
+  'nanoid@>=4.0.0 <5.1.16': 5.1.16
+  'devalue@>=5.1.0 <5.9.3': 5.9.3

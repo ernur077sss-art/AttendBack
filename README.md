@@ -12,7 +12,9 @@
 
 [Русский](README.ru.md) · [Demo walkthrough](docs/demo.ru.md) · [Architecture](docs/architecture.ru.md) · [Development plan](hackathon-product-plan/development-plan.ru.md) · [Release status](docs/progress.ru.md)
 
-**Current release:** [public devnet beta](https://attendback-three.vercel.app), hosted on Vercel Hobby + Neon Free. An actual hosted API flow has verified publication, a 1 test-USDC deposit, QR-token check-in, and a finalized automatic refund. Regular-wallet and physical-phone checks, the final video, and submission remain pending.
+**Current release:** [public devnet beta](https://attendback-three.vercel.app), hosted on Vercel Hobby + Neon Free. An actual hosted API flow has verified publication, a 1 test-USDC deposit, QR-token check-in, and a finalized automatic refund. Regular-wallet and physical-phone checks, the product demo and pitch videos, and submission remain pending.
+
+**Explore without a wallet:** [interactive walkthrough](https://attendback-three.vercel.app/demo?lang=en) · [Русский](https://attendback-three.vercel.app/demo?lang=ru). This educational example makes no payments; real operations are available in the workspaces.
 
 **Interface languages:** [English](https://attendback-three.vercel.app/?lang=en) · [Русский](https://attendback-three.vercel.app/?lang=ru). Use **RU / EN** in the header; your choice is saved for future visits. Event content stays as written by the organizer. The recovery page supports both languages too.
 
@@ -198,7 +200,7 @@ Open [localhost:4173](http://127.0.0.1:4173), enter the RPC URL and the deposit 
 
 ## Tests and Verification
 
-The bilingual release passed **52 automated tests and 10 browser scenarios**, plus TypeScript checks and both production builds. [GitHub CI for the deployed code](https://github.com/ernur077sss-art/AttendBack/actions/runs/37904855966) also passed the program build and PostgreSQL/RPC checks. Earlier database restoration checks are recorded in the [audit](docs/plan-audit.ru.md); current results are in the [progress log](docs/progress.ru.md).
+The October 9 review passed **52 unit/program/signer tests, 19 PostgreSQL/RPC tests, and 12 browser scenarios**, plus TypeScript, web/recovery/signer builds, SBF/codegen, and restoration of all 17 database tables. After patching two transitive dependencies, the production audit reports 0 advisories. See the [full review](docs/plan-audit-2026-10-09.ru.md) and [current deployment/CI status](docs/progress.ru.md).
 
 With PostgreSQL and localnet running:
 
@@ -226,7 +228,7 @@ Tests use a separate `_test` database; browser tests start their own web applica
 - [x] Stage 9 preparation: release configuration, signer, manifest, and demo script.
 - [x] Stage 9: deploy to devnet, host the services, and verify an automatic refund through the hosted API.
 - [ ] Stage 9: verify a regular wallet, physical phone, and the public recovery flow.
-- [ ] Publish the final demo video and submit the hackathon application.
+- [ ] Publish a product demo (≤3 minutes) and a separate pitch (≤2 minutes), then submit the hackathon application.
 
 Full roadmap: [approved development plan](hackathon-product-plan/development-plan.ru.md). The current release does not support mainnet or real funds. Card/tenge payments, SSO, external registration integrations, and email/SMS are outside this MVP.
 
@@ -239,7 +241,7 @@ Full roadmap: [approved development plan](hackathon-product-plan/development-pla
 - [Demo walkthrough](docs/demo.ru.md)
 - [Architecture](docs/architecture.ru.md) and [payment protocol](docs/protocol.ru.md)
 - [Devnet release checklist](docs/devnet-release.ru.md)
-- [Verified progress](docs/progress.ru.md) and [plan audit](docs/plan-audit.ru.md)
+- [Verified progress](docs/progress.ru.md) and [plan audit](docs/plan-audit-2026-10-09.ru.md)
 - [Runtime notes](docs/runtime-notes.ru.md)
 - [GitHub Actions](https://github.com/ernur077sss-art/AttendBack/actions/workflows/check.yml)
 

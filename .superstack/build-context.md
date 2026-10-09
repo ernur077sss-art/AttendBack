@@ -57,12 +57,27 @@
         "category": "ux",
         "description": "Event booking button still used device time and could disable a valid reservation",
         "fix": "Use Solana clock on the event page; browser regression covers device drift, RPC failure and recovery"
+      },
+      {
+        "severity": "high",
+        "category": "dependencies",
+        "description": "Production audit reported eight advisories in Workflow transitive dependencies",
+        "fix": "Pin nanoid 5.1.16 and devalue 5.9.3 using scoped overrides; production audit returns zero advisories"
+      },
+      {
+        "severity": "medium",
+        "category": "product",
+        "description": "Landing lacked the planned sample policy and demo entry",
+        "fix": "Add bilingual landing explanation and clearly labeled transaction-free educational demo; verify keyboard, locale, error recovery and mobile layouts"
       }
-    ]
+    ],
+    "last_reviewed": "2026-10-09"
   }
 }
 ```
 
-Оценки относятся к внутреннему ревью прототипа, не к независимому аудиту. Внешний запуск требует devnet-ролей, размещения signer-сервиса, хостинга и проверки с пользовательским кошельком.
+Оценки относятся к внутреннему ревью devnet-прототипа, не к независимому аудиту. Mainnet не готов.
 
-Этап 9: реализован изолированный devnet signer; 13 проверок канонического сообщения, аккаунтов, ролей, комиссии, симуляции, подписи и HTTP. Общий прогон — 30 тестов. Секреты и TLS ещё не размещены. Ограничение запросов находится в памяти процесса; фактическое посещение и распределение мест остаются доверием к backend. Защищённый mount ключей и независимое размещение recovery проверяются на выбранном хосте.
+Актуально на 9 октября: web/API, изолированный signer, отдельный recovery и Workflow размещены на Vercel Hobby; 7 миграций применены в Neon Free. Программа опубликована в devnet; облачный возврат 1 test USDC ранее подтверждён через API-клиент со сгенерированными ключами. Подробности: docs/release-manifest.json.
+
+Остаются обычный кошелёк, физическая камера по HTTPS, публичный recovery с транзакцией и дополнительные публичные споры/неявки. Ограничение запросов signer в памяти процесса не является глобальным distributed rate limit. Сотрудник подтверждает посещение, backend распределяет места, resolver решает спор, upgrade authority управляет обновлениями. Финальные видео и подача заявки не подтверждены. Текущая сверка: docs/plan-audit-2026-10-09.ru.md.

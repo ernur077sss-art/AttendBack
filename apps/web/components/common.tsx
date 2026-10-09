@@ -27,6 +27,7 @@ export function useResource<T>(path: string | null) {
       setLoading(false);
       return;
     }
+    setLoading(true);
     setError('');
     const request = ++sequence.current;
     try {

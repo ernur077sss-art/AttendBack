@@ -12,7 +12,9 @@
 
 [English](README.md) · [Сценарий демо](docs/demo.ru.md) · [Архитектура](docs/architecture.ru.md) · [План разработки](hackathon-product-plan/development-plan.ru.md) · [Статус релиза](docs/progress.ru.md)
 
-**Текущая версия:** [публичная devnet-бета](https://attendback-three.vercel.app) на Vercel Hobby + Neon Free. Через облачный API подтверждены публикация, залог 1 тестового USDC, вход по QR-токену и автоматический finalized-возврат. Проверки обычного кошелька и физического телефона, итоговое видео и заявка ещё предстоят.
+**Текущая версия:** [публичная devnet-бета](https://attendback-three.vercel.app) на Vercel Hobby + Neon Free. Через облачный API подтверждены публикация, залог 1 тестового USDC, вход по QR-токену и автоматический finalized-возврат. Проверки обычного кошелька и физического телефона, демонстрационное видео, питч и заявка ещё предстоят.
+
+**Посмотреть без кошелька:** [учебный обзор на русском](https://attendback-three.vercel.app/demo?lang=ru) · [English](https://attendback-three.vercel.app/demo?lang=en). Это объяснение сценария без платежей; настоящие операции доступны через кабинеты.
 
 **Языки интерфейса:** [Русский](https://attendback-three.vercel.app/?lang=ru) · [English](https://attendback-three.vercel.app/?lang=en). Переключатель **RU / EN** находится в шапке, выбор сохраняется между посещениями. Названия и описания событий остаются авторскими. Резервная страница возврата также переведена.
 
@@ -198,7 +200,7 @@ pnpm recovery:start
 
 ## Тесты и проверки
 
-Двуязычный релиз прошёл **52 автоматизированных теста и 10 браузерных сценариев**, проверку TypeScript и обе production-сборки. [GitHub CI опубликованного кода](https://github.com/ernur077sss-art/AttendBack/actions/runs/37904855966) также успешно проверил сборку программы и PostgreSQL/RPC. Предыдущие проверки восстановления БД зафиксированы в [отчёте](docs/plan-audit.ru.md), текущие результаты — в [журнале прогресса](docs/progress.ru.md).
+Проверка 9 октября: **52 модульных/программных/signer-теста, 19 PostgreSQL/RPC-тестов и 12 браузерных сценариев** прошли. Также прошли TypeScript, сборки web/recovery/signer, сборка SBF и codegen, восстановление 17 таблиц. После обновления двух транзитивных зависимостей production-аудит сообщает 0 advisory. [Полная сверка](docs/plan-audit-2026-10-09.ru.md), [актуальная публикация и CI](docs/progress.ru.md).
 
 При работающих PostgreSQL и localnet:
 
@@ -226,7 +228,7 @@ pnpm test:e2e
 - [x] Подготовка этапа 9: конфигурация релиза, signer, манифест и сценарий демо.
 - [x] Этап 9: размещение в devnet, публикация сервисов и автоматический возврат через облачный API.
 - [ ] Этап 9: обычный кошелёк, физический телефон и публичный резервный возврат.
-- [ ] Публикация итогового видео и отправка заявки на хакатон.
+- [ ] Публикация демонстрации продукта (≤3 минуты), отдельного питча (≤2 минуты) и отправка заявки на хакатон.
 
 Полный roadmap: [утверждённый план разработки](hackathon-product-plan/development-plan.ru.md). Текущая версия не поддерживает mainnet и реальные средства. Карты/тенге, SSO, внешние системы регистрации и email/SMS не входят в этот MVP.
 
@@ -239,7 +241,7 @@ pnpm test:e2e
 - [Сценарий демонстрации](docs/demo.ru.md)
 - [Архитектура](docs/architecture.ru.md) и [денежный протокол](docs/protocol.ru.md)
 - [Порядок devnet-релиза](docs/devnet-release.ru.md)
-- [Проверенный прогресс](docs/progress.ru.md) и [сверка с планом](docs/plan-audit.ru.md)
+- [Проверенный прогресс](docs/progress.ru.md) и [сверка с планом](docs/plan-audit-2026-10-09.ru.md)
 - [Особенности окружения](docs/runtime-notes.ru.md)
 - [GitHub Actions](https://github.com/ernur077sss-art/AttendBack/actions/workflows/check.yml)
 

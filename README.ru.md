@@ -1,16 +1,14 @@
 # AttendBack — Приходите. Залог вернётся.
 
 [![CI](https://github.com/ernur077sss-art/AttendBack/actions/workflows/check.yml/badge.svg?branch=main)](https://github.com/ernur077sss-art/AttendBack/actions/workflows/check.yml)
-[![Деплой Vercel](https://img.shields.io/badge/Vercel-Live%20Demo-000000?logo=vercel&logoColor=white)](https://attendback-three.vercel.app/?lang=ru)
+[![Деплой Vercel](https://img.shields.io/badge/Vercel-Live%20Demo-000000?logo=vercel&logoColor=white)](https://attendback-three.vercel.app/)
 [![Solana](https://img.shields.io/badge/Solana-devnet-9945FF)](docs/architecture.ru.md)
 [![Статус](https://img.shields.io/badge/Status-devnet_beta-14F195)](docs/progress.ru.md)
 [![Colosseum](https://img.shields.io/badge/Colosseum-Kazakhstan_track-14F195)](https://superteam.fun/earn/listing/colosseum-crypto-worlds-fair-hackathon-superteam-kazakhstan-track)
 
 > Возвратные залоги за посещение мероприятий на Solana. Гость бронирует место, проходит по QR-билету и получает залог обратно по правилам, опубликованным до оплаты.
 
-**Работающий сайт на Vercel: [Открыть AttendBack ↗](https://attendback-three.vercel.app/?lang=ru)**
-
-[Панель Vercel](https://vercel.com/ernur1) (требуется доступ к аккаунту владельца).
+**Работающий сайт на Vercel: [attendback-three.vercel.app ↗](https://attendback-three.vercel.app/)**
 
 [English](README.md) · [Сценарий демо](docs/demo.ru.md) · [Архитектура](docs/architecture.ru.md) · [План разработки](hackathon-product-plan/development-plan.ru.md) · [Статус релиза](docs/progress.ru.md)
 

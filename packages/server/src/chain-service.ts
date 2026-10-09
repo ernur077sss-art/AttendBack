@@ -265,6 +265,12 @@ export async function prepareDeposit(
     await db.query('select id from registrations where id=$1 for update', [id]);
     const r = await ownerRegistration(id, wallet, db),
       s = await sessionRow(r.session_id, db);
+    if (wallet === s.policy.penaltyRecipient)
+      throw new DomainError(
+        'PENALTY_RECIPIENT',
+        'Получатель удержаний не может вносить залог на своё событие. Используйте отдельный кошелёк участника.',
+        400,
+      );
     if (
       !['Reserved', 'Offered', 'PaymentPending'].includes(r.seat_state) ||
       !s.published

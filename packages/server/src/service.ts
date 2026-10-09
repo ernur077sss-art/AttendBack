@@ -134,6 +134,12 @@ export async function reserve(wallet: string, sessionId: string) {
       s.policy.bookingClose <= (await chainTime())
     )
       throw new DomainError('CLOSED', 'Регистрация недоступна');
+    if (wallet === s.policy.penaltyRecipient)
+      throw new DomainError(
+        'PENALTY_RECIPIENT',
+        'Получатель удержаний не может вносить залог на своё событие. Используйте отдельный кошелёк участника.',
+        400,
+      );
     const prior = await db.query(
       'select * from registrations where session_id=$1 and wallet=$2',
       [sessionId, wallet],

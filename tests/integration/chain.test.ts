@@ -97,6 +97,18 @@ test('stage 5: server prepares co-signed deposit, guest signs and the actual RPC
   expect(publication.simulation.ok).toBe(true);
   await send(owner, publication);
   expect((await syncPublication(event.sessionId)).published).toBe(true);
+  await expect(reserve(owner.address, event.sessionId)).rejects.toMatchObject({
+    code: 'PENALTY_RECIPIENT',
+    status: 400,
+  });
+  expect(
+    (
+      await pool.query(
+        'select count(*)::int as count from registrations where session_id=$1',
+        [event.sessionId],
+      )
+    ).rows[0].count,
+  ).toBe(0);
   const r = await reserve(guest.address, event.sessionId);
   const permit = await prepareDeposit(guest.address, r.id, 0);
   expect(permit.simulation.ok).toBe(true);

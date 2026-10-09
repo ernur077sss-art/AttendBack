@@ -67,8 +67,8 @@
     "Additional public devnet dispute/no-show scenarios"
   ],
   "webDeployment": {
-    "id": "dpl_UmD1Jz1Tb96pKReMsiTLEvfqg5y1",
-    "sourceCommit": "849cfb6124b3cf3856d5a8c372e989507418f196",
+    "id": "dpl_E2UFS9pwXus22ejPtVxDEN6HYPim",
+    "sourceCommit": "d84d0e329e187a4f8f59f24c1725965ba92b9676",
     "status": "READY"
   },
   "signerDeployment": {
@@ -107,8 +107,32 @@
     "wrongOrigin": 403
   },
   "ci": {
-    "sourceCommit": "849cfb6124b3cf3856d5a8c372e989507418f196",
+    "sourceCommit": "d84d0e329e187a4f8f59f24c1725965ba92b9676",
     "status": "success",
-    "url": "https://github.com/ernur077sss-art/AttendBack/actions/runs/37900390698"
+    "url": "https://github.com/ernur077sss-art/AttendBack/actions/runs/37904855966"
+  },
+  "recoveryDeployment": {
+    "id": "dpl_8kLvtE24CntceiDFATXFLvqfQEK9",
+    "sourceCommit": "d84d0e329e187a4f8f59f24c1725965ba92b9676",
+    "status": "READY"
+  },
+  "interfaceLanguages": {
+    "supported": ["ru", "en"],
+    "russianUrl": "https://attendback-three.vercel.app/?lang=ru",
+    "englishUrl": "https://attendback-three.vercel.app/?lang=en",
+    "verifiedAt": "2026-10-09T08:40:16.176653+00:00",
+    "localChecks": {
+      "unitTests": 52,
+      "browserScenariosVerified": 10,
+      "targetedFinalBrowserRun": "4 passed",
+      "productionBuilds": ["web", "recovery"]
+    },
+    "publicChecks": [
+      "English home rendered",
+      "RU/EN switch and locale-specific dates rendered",
+      "recovery link carries language",
+      "English recovery rendered",
+      "API health 200, database true, devnet"
+    ]
   }
 }
